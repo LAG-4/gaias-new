@@ -38,23 +38,30 @@ class _CommunityPageState extends State<CommunityPage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Text('COMMUNITY',style: TextStyle(color: Colors.black,fontSize: 28,fontFamily: 'InterBlack'),),
+                const Text('COMMUNITY',style: TextStyle(color: Colors.black,fontSize: 28,fontFamily: 'InterBlack'),),
                 Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(8.0),
-                    height: 100,
+                    height: 80,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       color: Colors.black12,
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(Icons.person),
-                        SizedBox(width: 10,),
-                        Text(
-                          "Pintu Sehrawat made a difference today!",
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Image.asset('assets/u1.jpg'),
+                        ),
+                        SizedBox(width: 15,),
+                        const Text(
+                          "Shwet Siwach made a \ndifference today!",
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold
@@ -64,6 +71,8 @@ class _CommunityPageState extends State<CommunityPage> {
                     ),
                   ),
                 ),
+
+
                 Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Container(
@@ -85,13 +94,49 @@ class _CommunityPageState extends State<CommunityPage> {
                               fontWeight: FontWeight.bold
                           ),
                         ),
-                        SizedBox(height: 10,),
+                        const SizedBox(height: 10,),
                         Image.asset('assets/n1.jpg')
 
                       ],
                     ),
                   ),
                 ),
+
+
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(8.0),
+                    height: 80,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.black12,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Image.asset('assets/u2.jpg'),
+                        ),
+                        const SizedBox(width: 15,),
+                        const Text(
+                          "Anurag Yadav made a \ndifference today!",
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+
+
                 Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Container(

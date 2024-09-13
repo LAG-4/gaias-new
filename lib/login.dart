@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: const Center(child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('GAIAS',style: TextStyle(color: Colors.white,fontSize: 40,fontFamily: 'Habibi', fontWeight: FontWeight.bold),),
+                      Text("GAIA'S",style: TextStyle(color: Colors.white,fontSize: 40,fontFamily: 'Habibi', fontWeight: FontWeight.bold),),
                       Text('TOUCH',style: TextStyle(color: Colors.white,fontSize: 40,fontFamily: 'Habibi', fontWeight: FontWeight.bold),),
                     ],
                   )),
