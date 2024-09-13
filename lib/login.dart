@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gaia/homepage.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -51,7 +52,10 @@ class _LoginPageState extends State<LoginPage> {
                       TextButton(child:const Text('Sign in With Google',style: TextStyle(color: Colors.white),),
                         onPressed: (){
                           // Navigator.of(context).push(MaterialPageRoute(builder: (context)=>DamnTime()));
-                          null;
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const HomePage()),
+                          );
                         },
                       ),
                     ],

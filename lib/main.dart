@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gaia/homepage.dart';
 import 'package:gaia/login.dart';
 
 void main() {
