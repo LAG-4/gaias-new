@@ -42,6 +42,20 @@ class _HomePageState extends State<HomePage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+
+            Padding(
+              padding: const EdgeInsets.all(14.0),
+              child: TextField(
+                decoration: InputDecoration(
+                  icon: Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  hintText: 'Search...',
+                ),
+              ),
+            ),
+
             const Padding(
               padding: EdgeInsets.all(10.0),
               child: Text('SELECT YOUR TARGETED GOAL',style: TextStyle(fontFamily: 'InterBlack',color: Colors.deepPurple,fontSize: 28),),

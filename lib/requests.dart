@@ -14,9 +14,9 @@ class _RequestPageState extends State<RequestPage> {
   // final _auth = FirebaseAuth.instance;
 
   List imageList=[
-    "assets/a.png",
-    "assets/b.png",
-    "assets/c.png",
+    "assets/a.jpg",
+    "assets/b.jpg",
+    "assets/c.jpg",
   ];
 
 
@@ -36,20 +36,20 @@ class _RequestPageState extends State<RequestPage> {
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(18.0),
+            padding: const EdgeInsets.all(14.0),
             child: Column(
               children: [
                 Text('REQUESTS',style: TextStyle(color: Colors.black,fontSize: 28,fontFamily: 'InterBlack'),),
                 Padding(
-                  padding: const EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.all(8.0),
                   child: Image(image: AssetImage(imageList[0]),),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.all(8.0),
                   child: Image(image: AssetImage(imageList[1])),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.all(8.0),
                   child: Image(image: AssetImage(imageList[2]),),
                 ),
                 

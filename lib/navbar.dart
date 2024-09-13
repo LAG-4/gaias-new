@@ -5,6 +5,7 @@ import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gaia/community.dart';
 import 'package:gaia/requests.dart';
 
 import 'homepage.dart';
@@ -50,10 +51,11 @@ class _DamnTimeState extends State<DamnTime> {
             setState(() => _currentIndex = index);
           },
 
-          children: const <Widget>[
+          children: <Widget>[
             HomePage(),
             ListPage(),
             RequestPage(),
+            CommunityPage(),
           ],
         ),
       ),
@@ -110,6 +112,18 @@ class _DamnTimeState extends State<DamnTime> {
               ),
               BottomNavyBarItem(
                 title: const Text('Requests',style: TextStyle(fontFamily: 'Inter'),),
+                // icon: Icon(Icons.stars),
+                icon: const Icon(
+                  Icons.notifications_active_rounded,
+                  size: 22,color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+                activeColor: Colors.white,
+                inactiveColor: Colors.white,
+              ),
+
+              BottomNavyBarItem(
+                title: const Text('Community',style: TextStyle(fontFamily: 'Inter'),),
                 // icon: Icon(Icons.stars),
                 icon: const Icon(
                   Icons.notifications_active_rounded,
