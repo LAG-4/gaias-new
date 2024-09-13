@@ -32,19 +32,19 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         shape: Border(
-          bottom: BorderSide(width: 3),
+          bottom: BorderSide(width: 2),
         ),
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.deepPurple,
         elevation: 0,
-        title: Center(child: Text("GAIA'S TOUCH",style: TextStyle(fontFamily: 'Habibi'),)),
+        title: Center(child: Text("GAIA'S TOUCH",style: TextStyle(fontWeight:FontWeight.bold, color: Colors.white),)),
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text('SELECT YOUR TARGETED GOAL',style: TextStyle(fontFamily: 'InterBlack',color: Colors.lightBlueAccent,fontSize: 30),),
+            const Padding(
+              padding: EdgeInsets.all(10.0),
+              child: Text('SELECT YOUR TARGETED GOAL',style: TextStyle(fontFamily: 'InterBlack',color: Colors.deepPurple,fontSize: 28),),
             ),
             Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [

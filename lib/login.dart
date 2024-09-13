@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gaia/homepage.dart';
 
+import 'navbar.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
 
@@ -12,6 +14,15 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        shape: const Border(
+          bottom: BorderSide(width: 2),
+        ),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.deepPurple,
+        elevation: 0,
+        title: const Center(child: Text("GAIA'S TOUCH",style: TextStyle(fontWeight:FontWeight.bold, color: Colors.white),)),
+      ),
       backgroundColor: Colors.grey.shade200,
       body: Center(
         child: SingleChildScrollView(
@@ -23,14 +34,14 @@ class _LoginPageState extends State<LoginPage> {
                   height: 150,
                   width: 300,
                   decoration: BoxDecoration(
-                    color: Colors.green.shade100,
-                    borderRadius: BorderRadius.circular(5),
+                    color: Colors.deepPurple,
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Center(child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('GAIAS',style: TextStyle(color: Colors.black,fontSize: 40,fontFamily: 'Habibi'),),
-                      Text('TOUCH',style: TextStyle(color: Colors.black,fontSize: 40,fontFamily: 'Habibi'),),
+                      Text('GAIAS',style: TextStyle(color: Colors.white,fontSize: 40,fontFamily: 'Habibi', fontWeight: FontWeight.bold),),
+                      Text('TOUCH',style: TextStyle(color: Colors.white,fontSize: 40,fontFamily: 'Habibi', fontWeight: FontWeight.bold),),
                     ],
                   )),
                 ),
@@ -44,18 +55,18 @@ class _LoginPageState extends State<LoginPage> {
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    color: Colors.red,
+                    color: Colors.pink,
                   ),
                   child: Row(mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       IconButton(onPressed: (){}, icon: Icon(Icons.g_mobiledata_rounded),color: Colors.white,),
                       TextButton(child:const Text('Sign in With Google',style: TextStyle(color: Colors.white),),
                         onPressed: (){
-                          // Navigator.of(context).push(MaterialPageRoute(builder: (context)=>DamnTime()));
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const HomePage()),
-                          );
+                          Navigator.of(context).push(MaterialPageRoute(builder: (context)=>DamnTime()));
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(builder: (context) => const HomePage()),
+                          // );
                         },
                       ),
                     ],
