@@ -78,7 +78,7 @@ class _CommunityPageState extends State<CommunityPage> {
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                    height: 290,
+                    height: 320,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       color: Colors.black12,

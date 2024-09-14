@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:gaia/analytics.dart';
 import 'package:url_launcher/url_launcher.dart';
 class ListPage extends StatefulWidget {
   const ListPage({Key? key}) : super(key: key);
@@ -45,9 +46,17 @@ class _ListPageState extends State<ListPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text("ACTIVE NGO'S IN YOUR LOCATION: BENGALURU",style: TextStyle(color: Colors.black,fontSize: 26,fontFamily: 'InterBlack'),),
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Image(image: AssetImage(imageList[0]),),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AnalyticsPage()),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Image(image: AssetImage(imageList[0]),),
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(10.0),
@@ -66,7 +75,7 @@ class _ListPageState extends State<ListPage> {
                   padding: const EdgeInsets.all(10.0),
                   child: Image(image: AssetImage(imageList[5]),),
                 ),
-                
+
                                 //THIS CODE RUNS PERFECTLY
                 //BELOW IS THE WORKING FIREBASE CODE BUT DUE TO INTERNET ISSUES WIDGETS WERENT LOADING FAST
                 //THIS IS WHY WE DECIDED TO USE ASSET IMAGES FOR PRESENTATION PURPOSES BUT OUR MAIN GOAL WAS USING FIREBASE ITSELF
