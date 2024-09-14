@@ -47,104 +47,103 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.all(14.0),
               child: TextField(
                 decoration: InputDecoration(
-                  icon: Icon(Icons.search),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(30),
                   ),
-                  hintText: 'Search...',
+                  labelText: 'Search',
                 ),
               ),
             ),
 
             const Padding(
-              padding: EdgeInsets.all(10.0),
-              child: Text('SELECT YOUR TARGETED GOAL',style: TextStyle(fontFamily: 'InterBlack',color: Colors.deepPurple,fontSize: 28),),
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              child: Text('SELECT YOUR TARGETED GOAL',style: TextStyle(fontFamily: 'InterBlack',color: Colors.black,fontSize: 28),),
             ),
             Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 InkWell(
-                  child: Image(image: AssetImage(imageList[0]),height: 90,),
+                  child: Image(image: AssetImage(imageList[0]),height: 100,),
                   onTap: (){
                     openDialog1();
                   },
                 ),
                 InkWell(
-                  child: Image(image: AssetImage(imageList[1]),height: 90,),
+                  child: Image(image: AssetImage(imageList[1]),height: 100,),
                   onTap: (){
                     openDialog2();
                   },
                 ),
                 InkWell(
-                  child: Image(image: AssetImage(imageList[2]),height: 90,),
+                  child: Image(image: AssetImage(imageList[2]),height: 100,),
                   onTap: (){
                     openDialog3();
                   },
                 ),
               ],
             ),
-            SizedBox(height: 15,),
+            SizedBox(height: 25,),
             Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 InkWell(
-                  child: Image(image: AssetImage(imageList[3]),height: 90,),
+                  child: Image(image: AssetImage(imageList[3]),height: 100,),
                   onTap: (){
                     openDialog4();
                   },
                 ),
                 InkWell(
-                  child: Image(image: AssetImage(imageList[4]),height: 90,),
+                  child: Image(image: AssetImage(imageList[4]),height: 100,),
                   onTap: (){
                     openDialog5();
                   },
                 ),
                 InkWell(
-                  child: Image(image: AssetImage(imageList[5]),height: 90,),
+                  child: Image(image: AssetImage(imageList[5]),height: 100,),
                   onTap: (){
                     openDialog6();
                   },
                 ),
               ],
             ),
-            SizedBox(height: 15,),
+            SizedBox(height: 25,),
             Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 InkWell(
-                  child: Image(image: AssetImage(imageList[6]),height: 90,),
+                  child: Image(image: AssetImage(imageList[6]),height: 100,),
                   onTap: (){
                     openDialog7();
                   },
                 ),
                 InkWell(
-                  child: Image(image: AssetImage(imageList[7]),height: 90,),
+                  child: Image(image: AssetImage(imageList[7]),height: 100,),
                   onTap: (){
                     openDialog8();
                   },
                 ),
                 InkWell(
-                  child: Image(image: AssetImage(imageList[8]),height: 90,),
+                  child: Image(image: AssetImage(imageList[8]),height: 100,),
                   onTap: (){
                     openDialog9();
                   },
                 ),
               ],
             ),
-            SizedBox(height: 15,),
+            SizedBox(height: 25,),
             Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 InkWell(
-                  child: Image(image: AssetImage(imageList[9]),height: 90,),
+                  child: Image(image: AssetImage(imageList[9]),height: 100,),
                   onTap: (){
                     openDialog10();
                   },
                 ),
                 InkWell(
-                  child: Image(image: AssetImage(imageList[10]),height: 90,),
+                  child: Image(image: AssetImage(imageList[10]),height: 100,),
                   onTap: (){
                     openDialog11();
                   },
                 ),
                 InkWell(
-                  child: Image(image: AssetImage(imageList[11]),height: 90,),
+                  child: Image(image: AssetImage(imageList[11]),height: 100,),
                   onTap: (){
                     openDialog12();
                   },
@@ -152,38 +151,40 @@ class _HomePageState extends State<HomePage> {
               ],
 
             ),
-            SizedBox(height: 15,),
+            SizedBox(height: 25,),
             Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 InkWell(
-                  child: Image(image: AssetImage(imageList[12]),height: 90,),
+                  child: Image(image: AssetImage(imageList[12]),height: 100,),
                   onTap: (){
                     openDialog13();
                   },
                 ),                InkWell(
-                  child: Image(image: AssetImage(imageList[13]),height: 90,),
+                  child: Image(image: AssetImage(imageList[13]),height: 100,),
                   onTap: (){
                     openDialog14();
                   },
                 ),                InkWell(
-                  child: Image(image: AssetImage(imageList[14]),height: 90,),
+                  child: Image(image: AssetImage(imageList[14]),height: 100,),
                   onTap: (){
                     openDialog15();
                   },
                 ),
               ],
             ),
-            SizedBox(height: 15,),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
+            SizedBox(height: 25,),
+            Row(mainAxisAlignment: MainAxisAlignment.start,
               children: [
+                SizedBox(width: 31,),
                 InkWell(
-                  child: Image(image: AssetImage(imageList[15]),height: 90,),
+                  child: Image(image: AssetImage(imageList[15]),height: 100,),
                   onTap: (){
                     openDialog16();
                   },
                 ),
+                SizedBox(width: 31,),
                 InkWell(
-                  child: Image(image: AssetImage(imageList[16]),height: 90,),
+                  child: Image(image: AssetImage(imageList[16]),height: 100,),
                   onTap: (){
                     openDialog17();
                   },

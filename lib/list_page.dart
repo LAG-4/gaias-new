@@ -42,10 +42,23 @@ class _ListPageState extends State<ListPage> {
           child: Padding(
             padding: const EdgeInsets.all(18.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("ACTIVE NGO'S IN YOUR LOCATION: BENGALURU",style: TextStyle(color: Colors.black,fontSize: 26,fontFamily: 'InterBlack'),),
+                Text("ACTIVE NGO'S IN YOUR LOCATION:",style: TextStyle(color: Colors.black,fontSize: 18,fontFamily: 'InterBlack'),),
+                Text("BENGALURU",style: TextStyle(color: Colors.deepPurple,fontSize: 26,fontFamily: 'InterBlack'),),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AnalyticsPage()),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Image(image: AssetImage(imageList[0]),),
+                  ),
+                ),
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -55,25 +68,45 @@ class _ListPageState extends State<ListPage> {
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(10.0),
-                    child: Image(image: AssetImage(imageList[0]),),
+                    child: Image(image: AssetImage(imageList[1]),),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Image(image: AssetImage(imageList[1]),),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AnalyticsPage()),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Image(image: AssetImage(imageList[2]),),
+                  ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Image(image: AssetImage(imageList[2]),),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Image(image: AssetImage(imageList[3]),),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AnalyticsPage()),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Image(image: AssetImage(imageList[3]),),
+                  ),
                 ),
 
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Image(image: AssetImage(imageList[5]),),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AnalyticsPage()),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Image(image: AssetImage(imageList[5]),),
+                  ),
                 ),
 
                                 //THIS CODE RUNS PERFECTLY
