@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gaia/marketplace.dart';
 import 'package:gaia/requests.dart';
 
 class MyRewards extends StatefulWidget {
@@ -104,7 +105,7 @@ class _MyRewardsState extends State<MyRewards> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const RequestPage()),
+                      MaterialPageRoute(builder: (context) => const Marketplace()),
                     );
                   },
                   child: Container(
