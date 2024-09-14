@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gaia/mycontributions.dart';
+import 'package:gaia/myrewards.dart';
 import 'package:url_launcher/url_launcher.dart';
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -31,6 +33,16 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              icon: const Icon(Icons.menu, color: Colors.white,),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
+        ),
         shape: Border(
           bottom: BorderSide(width: 2),
         ),
@@ -38,6 +50,47 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.deepPurple,
         elevation: 0,
         title: Center(child: Text("GAIA'S TOUCH",style: TextStyle(fontWeight:FontWeight.bold, color: Colors.white),)),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.deepPurple,
+              ),
+              child: Text(
+                'Welcome, Harshvardhan',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ListTile(
+              title: const Text('My Contributions'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MyContributions()),
+                );
+                // Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text('My Reward Points'),
+              onTap: () {
+                // Update the state of the app.
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MyRewards()),
+                );
+                // Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(

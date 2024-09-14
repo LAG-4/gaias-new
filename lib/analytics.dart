@@ -51,7 +51,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 color: Colors.deepPurple,
               ),
               child: TextButton(
-                child:const Text('CONTACT',style: TextStyle(color: Colors.white, fontSize: 18),),
+                child:const Text('CONTACT'
+                    '',style: TextStyle(color: Colors.white, fontSize: 18),),
                 onPressed: (){
                   null;
                 },
