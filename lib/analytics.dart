@@ -20,11 +20,47 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         elevation: 0,
         title: Center(child: Text("GAIA'S TOUCH",style: TextStyle(fontWeight:FontWeight.bold, color: Colors.white),)),
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.all(8),
-            child: Text("analytics page"),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text(
+                "NGO Overview",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 28,
+                  fontFamily: 'InterBlack'
+                ),
+              ),
+
+              SizedBox(height: 20,),
+
+              Image.asset('assets/analytics.png'),
+
+          SizedBox(height: 20,),
+
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: Colors.deepPurple,
+              ),
+              child: TextButton(
+                child:const Text('CONTACT',style: TextStyle(color: Colors.white, fontSize: 18),),
+                onPressed: (){
+                  null;
+                },
+              ),
+            ),
+          ),
+
+
+            ],
           ),
         ),
       ),
