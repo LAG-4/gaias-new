@@ -1,10 +1,10 @@
-# Gaia's Touch
+# Setu
 
 ## One touch closer to a better world 🌍
 
 ### Introduction
 
-*Gaia's Touch* is a mobile application designed to connect non-governmental organizations (NGOs) with volunteers and donors who are passionate about working towards Sustainable Development Goals (SDGs). The platform serves as a hub for NGOs, volunteers, and donors to collaborate on various projects, track progress, manage events, and drive social change. Through an easy-to-use interface, users can find opportunities to make an impact in areas such as hunger alleviation, poverty reduction, and environmental sustainability.
+*Setu* is a mobile application designed to connect non-governmental organizations (NGOs) with volunteers and donors who are passionate about working towards Sustainable Development Goals (SDGs). The platform serves as a hub for NGOs, volunteers, and donors to collaborate on various projects, track progress, manage events, and drive social change. Through an easy-to-use interface, users can find opportunities to make an impact in areas such as hunger alleviation, poverty reduction, and environmental sustainability.
 
 ### Features
 
@@ -45,15 +45,4 @@
 6. *Join Events*: Participate in NGO-hosted events like fundraisers or webinars.
 
 
-### Contact
-
-For any questions or suggestions, feel free to reach out to the project maintainers:
-
-- Mritunjay Sharma
-- Harshvardhan Singh
-- Saksham Tyagi
-- Suhaib MN Khan
-
----
-
-*Gaia's Touch* - One touch closer to a better world! 🌍
+*Setu* - One touch closer to a better world! 🌍
