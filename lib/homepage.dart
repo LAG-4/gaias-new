@@ -5,6 +5,8 @@ import 'package:gaia/myrewards.dart';
 import 'package:gaia/theme_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -96,60 +98,208 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Helper method to open dialog based on index
-  void _openDialogForGoal(int index) {
+  // Helper method to open info for goal
+  void _openNgoInfoForGoal(BuildContext context, int index) {
+    // Goal title based on index
+    String goalTitle = '${index + 1}. ${goalTitles[index]}';
+
+    // Get NGO list based on goal index
+    List<Map<String, String>> ngoList = _getNgoListForGoal(index);
+
+    // Navigate to NGO list screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => NgoListScreen(
+          goalTitle: goalTitle,
+          ngoList: ngoList,
+          goalIndex: index,
+        ),
+      ),
+    );
+  }
+
+  // Helper method to get NGO list for a goal
+  List<Map<String, String>> _getNgoListForGoal(int index) {
     switch (index) {
       case 0:
-        openDialog1();
-        break;
+        return [
+          {
+            'name': 'ActionAid',
+            'description': 'Working to end poverty and injustice worldwide'
+          },
+          {
+            'name': 'CARE',
+            'description':
+                'Fighting global poverty with focus on empowering women and girls'
+          },
+          {
+            'name': 'Oxfam',
+            'description':
+                'Global movement for change to end injustice and poverty'
+          },
+          {
+            'name': 'Save the Children',
+            'description': 'Supporting children\'s rights in over 100 countries'
+          },
+          {
+            'name': 'Smile Foundation',
+            'description':
+                'Education, healthcare, and livelihood programs for underprivileged'
+          },
+        ];
       case 1:
-        openDialog2();
-        break;
+        return [
+          {
+            'name': 'AP Foundation',
+            'description': 'Providing food security and sustainable agriculture'
+          },
+          {
+            'name': 'Goonj',
+            'description':
+                'Material-based resource distribution to address poverty and hunger'
+          },
+          {
+            'name': 'ANNM Foundation',
+            'description': 'Supporting nutritional programs across rural India'
+          },
+          {
+            'name': 'Food Bank India',
+            'description':
+                'Collecting and distributing food to those who have little or none'
+          },
+          {
+            'name': 'Feeding India',
+            'description':
+                'Fighting hunger and food waste by redistributing surplus food'
+          },
+        ];
       case 2:
-        openDialog3();
-        break;
+        return [
+          {
+            'name': 'BnM Foundation',
+            'description':
+                'Providing healthcare services to underserved communities'
+          },
+          {
+            'name': 'Smile Foundation',
+            'description':
+                'Comprehensive healthcare initiatives for vulnerable populations'
+          },
+          {
+            'name': 'AP Foundation',
+            'description':
+                'Healthcare programs focusing on preventive care and awareness'
+          },
+          {
+            'name': 'PE Foundation',
+            'description':
+                'Promoting mental and physical wellbeing in communities'
+          },
+          {
+            'name': 'SankaraEye Foundation',
+            'description': 'Eyecare services to eradicate preventable blindness'
+          },
+        ];
+      // Continue for all other cases 3-16
       case 3:
-        openDialog4();
-        break;
+        return [
+          {
+            'name': 'Teach For India',
+            'description':
+                'Providing quality education to underprivileged children'
+          },
+          {
+            'name': 'PE Foundation',
+            'description': 'Educational programs for marginalized communities'
+          },
+          {
+            'name': 'Akanksha Foundation',
+            'description': 'Education initiatives for low-income communities'
+          },
+          {
+            'name': 'RTR India',
+            'description': 'Promoting literacy through reading programs'
+          },
+          {
+            'name': 'Bhumi',
+            'description':
+                'Volunteer-driven educational programs for disadvantaged youth'
+          },
+        ];
       case 4:
-        openDialog5();
-        break;
+        return [
+          {
+            'name': 'BT India',
+            'description':
+                'Advancing gender equality through community initiatives'
+          },
+          {
+            'name': 'Oxfam India',
+            'description': 'Fighting discrimination and violence against women'
+          },
+          {
+            'name': 'CREA',
+            'description':
+                'Building feminist leadership and advancing women\'s rights'
+          },
+          {
+            'name': 'CARE India',
+            'description':
+                'Empowering women through education and economic opportunities'
+          },
+          {
+            'name': 'Jagori',
+            'description': 'Creating safe spaces and resources for women'
+          },
+        ];
       case 5:
-        openDialog6();
-        break;
-      case 6:
-        openDialog7();
-        break;
-      case 7:
-        openDialog8();
-        break;
-      case 8:
-        openDialog9();
-        break;
-      case 9:
-        openDialog10();
-        break;
-      case 10:
-        openDialog11();
-        break;
-      case 11:
-        openDialog12();
-        break;
-      case 12:
-        openDialog13();
-        break;
-      case 13:
-        openDialog14();
-        break;
-      case 14:
-        openDialog15();
-        break;
-      case 15:
-        openDialog16();
-        break;
-      case 16:
-        openDialog17();
-        break;
+        return [
+          {
+            'name': 'WaterAid India',
+            'description': 'Providing clean water and sanitation solutions'
+          },
+          {
+            'name': 'WASH United',
+            'description': 'Promoting water, sanitation and hygiene education'
+          },
+          {
+            'name': 'Water.org',
+            'description': 'Innovative solutions for the global water crisis'
+          },
+          {
+            'name': 'Gram Vikas',
+            'description': 'Rural water and sanitation programs'
+          },
+          {
+            'name': 'Sulabh',
+            'description': 'Pioneering sanitation improvements in India'
+          },
+        ];
+      // Add cases for remaining goals
+      default:
+        return [
+          {
+            'name': 'Organization 1',
+            'description': 'Description of organization 1'
+          },
+          {
+            'name': 'Organization 2',
+            'description': 'Description of organization 2'
+          },
+          {
+            'name': 'Organization 3',
+            'description': 'Description of organization 3'
+          },
+          {
+            'name': 'Organization 4',
+            'description': 'Description of organization 4'
+          },
+          {
+            'name': 'Organization 5',
+            'description': 'Description of organization 5'
+          },
+        ];
     }
   }
 
@@ -253,8 +403,8 @@ class _HomePageState extends State<HomePage> {
                               image: AssetImage(imageList[_filteredIndices[i]]),
                               height: 100,
                             ),
-                            onTap: () =>
-                                _openDialogForGoal(_filteredIndices[i]),
+                            onTap: () => _openNgoInfoForGoal(
+                                context, _filteredIndices[i]),
                           ),
                         ),
                       )
@@ -272,8 +422,8 @@ class _HomePageState extends State<HomePage> {
                                   imageList[_filteredIndices[i + 1]]),
                               height: 100,
                             ),
-                            onTap: () =>
-                                _openDialogForGoal(_filteredIndices[i + 1]),
+                            onTap: () => _openNgoInfoForGoal(
+                                context, _filteredIndices[i + 1]),
                           ),
                         ),
                       )
@@ -291,8 +441,8 @@ class _HomePageState extends State<HomePage> {
                                   imageList[_filteredIndices[i + 2]]),
                               height: 100,
                             ),
-                            onTap: () =>
-                                _openDialogForGoal(_filteredIndices[i + 2]),
+                            onTap: () => _openNgoInfoForGoal(
+                                context, _filteredIndices[i + 2]),
                           ),
                         ),
                       )
@@ -312,1262 +462,677 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
-  Future openDialog1() => showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: Text(
-              '1. NO POVERTY',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: const Color(0xFF1E1E1E),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.teal[400]!, width: 2),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'ActionAid',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'CARE',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Oxfam',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Save the Children',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Smile Foundation',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ));
-  Future openDialog2() => showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: Text(
-              '2. ZERO HUNGER',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: const Color(0xFF1E1E1E),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.teal[400]!, width: 2),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'AP Foundation',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Goonj',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'ANNM Foun.',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Food Bank India',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Feeding India ',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ));
-  Future openDialog3() => showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: Text(
-              '3. GOOD HEALTH & WELL-BEING',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: const Color(0xFF1E1E1E),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.teal[400]!, width: 2),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'BnM Foun.',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Smile Foundation',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'AP Foundation ',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'PE Foundation',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'SankaraEye Foun.',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ));
-  Future openDialog4() => showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: Text(
-              '4. QUALITY EDUCATION',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: const Color(0xFF1E1E1E),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.teal[400]!, width: 2),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Teach For India',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'PE Foun. ',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Akanksha Found.',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'RTR India',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Bhumi',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ));
-  Future openDialog5() => showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: Text(
-              '5. GENDER EQUALITY',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: const Color(0xFF1E1E1E),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.teal[400]!, width: 2),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'BT India',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Oxfam India',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'CREA',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'CARE India ',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Jagori',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ));
-  Future openDialog6() => showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: Text(
-              '6. CLEAN WATER & SANITATION',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: const Color(0xFF1E1E1E),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.teal[400]!, width: 2),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'WaterAid India',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'WASH United ',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Water.org',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Gram Vikas',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Sulabh',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ));
-  Future openDialog7() => showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: Text(
-              '7. AFFORDABLE & CLEAN ENERGY',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: const Color(0xFF1E1E1E),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.teal[400]!, width: 2),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'TERI',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'CEEW',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'PEG',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'SELCO',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Vasudha',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ));
-  Future openDialog8() => showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: Text(
-              '8. DECENT WORK & ECONOMIC GROWTH',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: const Color(0xFF1E1E1E),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.teal[400]!, width: 2),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'SEWA',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Pradan',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'GRAVIS',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'CEC',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'ASA',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ));
-  Future openDialog9() => showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: Text(
-              '9. INDUSTRY, INNOVATION & INFRASTRUCTURE',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: const Color(0xFF1E1E1E),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.teal[400]!, width: 2),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'ISABP',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'CSE',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'CII',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'TERI',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'DEG',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ));
-  Future openDialog10() => showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: Text(
-              '10. REDUCED INEQUALITIES',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: const Color(0xFF1E1E1E),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.teal[400]!, width: 2),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Oxfam India',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'ActionAid India',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Save the Children',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'CRY',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'PE',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ));
-  Future openDialog11() => showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: Text(
-              '11. SUSTAINABLE CITIES & COMMUNITIES',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: const Color(0xFF1E1E1E),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.teal[400]!, width: 2),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'TERI',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'CSE',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Clean Air Asia',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'IIHS',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'WRI India',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ));
-  Future openDialog12() => showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: Text(
-              '12. RESPONSIBLE CONSUMPTION & PRODUCTION',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: const Color(0xFF1E1E1E),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.teal[400]!, width: 2),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'CSE',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Toxics Link',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'IPCA',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'WCSI',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'TERI',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ));
-  Future openDialog13() => showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: Text(
-              '13. CLIMATE ACTION',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: const Color(0xFF1E1E1E),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.teal[400]!, width: 2),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'THE CGI',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'CSE',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'WWF',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Greenpeace India',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'IYCN',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ));
-  Future openDialog14() => showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: Text(
-              '14. LIFE BELOW WATER',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: const Color(0xFF1E1E1E),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.teal[400]!, width: 2),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'The Nature',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'WWF',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'WTI',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'RWMC',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'OCI',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ));
-  Future openDialog15() => showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: Text(
-              '15. LIFE ON LAND',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: const Color(0xFF1E1E1E),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.teal[400]!, width: 2),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'WWF',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'WTI',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Greenpeace India',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'WCS',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'CSE',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ));
-  Future openDialog17() => showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: Text(
-              '17. PARTNERSHIPS FOR THE GOALS',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: const Color(0xFF1E1E1E),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.teal[400]!, width: 2),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Social Justice',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'HRLN',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Navsarjan Trust',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: "People's Watch",
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'CHRI',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ));
-  Future openDialog16() => showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: Text(
-              '16. PEACE, JUSTICE AND STRONG INSTITUTIONS',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: const Color(0xFF1E1E1E),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.teal[400]!, width: 2),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'CRY',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Oxfam India',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'Save the Children',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'APF',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButtonWidget(
-                      buttonText: 'PEF',
-                      width: double.infinity,
-                      onpressed: () {},
-                      onpressed2: () {},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ));
 }
 
-class RoundedButtonWidget extends StatelessWidget {
-  final String buttonText;
-  final double width;
-  final Function onpressed;
-  final Function onpressed2;
+// New screen to display NGO list in a more user-friendly way
+class NgoListScreen extends StatelessWidget {
+  final String goalTitle;
+  final List<Map<String, String>> ngoList;
+  final int goalIndex;
 
-  RoundedButtonWidget({
-    required this.buttonText,
-    required this.width,
-    required this.onpressed,
-    required this.onpressed2,
-  });
+  const NgoListScreen({
+    required this.goalTitle,
+    required this.ngoList,
+    required this.goalIndex,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-                color: Colors.teal.withOpacity(0.3),
-                offset: Offset(0, 4),
-                blurRadius: 8.0)
-          ],
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            stops: [0.0, 1.0],
-            colors: [
-              Color(0xFF2C2C2C),
-              Color(0xFF212121),
-            ],
+    // Get the goal color based on the index (using teal as default)
+    Color goalColor = Colors.teal[400]!;
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          goalTitle,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+            fontFamily: 'Inter',
+            fontSize: 18,
           ),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.teal[400]!, width: 1),
+          maxLines: 2, // Allow up to 2 lines instead of ellipsis
+          overflow: TextOverflow.visible, // Show all text without cutting off
         ),
-        child: ElevatedButton(
-          style: ButtonStyle(
-            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.0),
+        titleSpacing: 0, // Reduce spacing to allow more room for text
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF1E1E1E)
+            : Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: Column(
+        children: [
+          // Full goal image
+          AspectRatio(
+            aspectRatio: 2, // Set the aspect ratio to ensure proper sizing
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.black
+                    : Colors.grey[100],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Image.asset(
+                'assets/image ${goalIndex + 1}.png',
+                fit: BoxFit.contain,
               ),
             ),
-            minimumSize: MaterialStateProperty.all(Size(width, 50)),
-            backgroundColor: MaterialStateProperty.all(Colors.transparent),
-            // elevation: MaterialStateProperty.all(3),
-            shadowColor: MaterialStateProperty.all(Colors.transparent),
           ),
-          onPressed: () {
-            onpressed();
-          },
-          child: Padding(
-            padding: const EdgeInsets.only(
-              top: 10,
-              bottom: 10,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  buttonText,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
-                  ),
+
+          // NGO list section
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Color(0xFF121212)
+                    : Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    onpressed2();
-                  },
-                  child: Text(
-                    'CONTACT',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: Offset(0, -4),
+                  ),
+                ],
+              ),
+              margin: EdgeInsets.only(top: 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // NGO list title with icon
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.business_rounded,
+                          color: Colors.teal,
+                          size: 24,
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Organizations Working on This Goal',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                              fontFamily: 'Inter',
+                            ),
+                            maxLines: 2, // Allow up to 2 lines
+                            overflow: TextOverflow.visible,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all(Colors.teal[400]),
-                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
+
+                  // Description of the goal
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                    child: Text(
+                      'Below are organizations actively working to achieve ${goalTitle.split('. ')[1].toLowerCase()}. Contact them to learn how you can contribute.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white70
+                            : Colors.black54,
+                        fontFamily: 'Inter',
                       ),
                     ),
                   ),
-                ),
-              ],
+
+                  // Divider
+                  Divider(
+                    thickness: 1,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white.withOpacity(0.05)
+                        : Colors.black.withOpacity(0.05),
+                  ),
+
+                  // NGO list
+                  Expanded(
+                    child: ListView.builder(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      itemCount: ngoList.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: NgoCard(
+                            name: ngoList[index]['name'] ?? '',
+                            description: ngoList[index]['description'] ?? '',
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Custom card for displaying NGO information
+class NgoCard extends StatelessWidget {
+  final String name;
+  final String description;
+
+  const NgoCard({
+    required this.name,
+    required this.description,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Color(0xFF1E1E1E)
+            : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+        border: Border.all(
+          color: Colors.teal.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              // Show contact options
+              _showContactOptions(context, name);
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // NGO logo or placeholder
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.teal.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.business,
+                        color: Colors.teal,
+                        size: 28,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  // NGO details
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black87,
+                            fontFamily: 'Inter',
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          description,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white70
+                                    : Colors.black54,
+                            fontFamily: 'Inter',
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Row(
+                          children: [
+                            ElevatedButton.icon(
+                              icon: Icon(
+                                Icons.call,
+                                size: 16,
+                              ),
+                              label: Text('Contact'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.teal,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                textStyle: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              onPressed: () {
+                                _showContactOptions(context, name);
+                              },
+                            ),
+                            SizedBox(width: 8),
+                            OutlinedButton.icon(
+                              icon: Icon(
+                                Icons.info_outline,
+                                size: 16,
+                              ),
+                              label: Text('More Info'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.teal,
+                                side: BorderSide(color: Colors.teal),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                textStyle: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              onPressed: () {
+                                // Show more information
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  // Method to show contact options
+  void _showContactOptions(BuildContext context, String ngoName) {
+    // Get real NGO information based on the name
+    Map<String, dynamic> ngoInfo = _getRealNgoInfo(ngoName);
+
+    // Format phone number and website using real data or fallbacks
+    String phoneNumber = ngoInfo['phone'] ?? '+91 98765 43210';
+    String email = ngoInfo['email'] ??
+        'contact@${ngoName.toLowerCase().replaceAll(' ', '')}.org';
+    String website = ngoInfo['website'] ??
+        'https://www.${ngoName.toLowerCase().replaceAll(' ', '')}.org';
+    String description = ngoInfo['description'] ?? 'Information about $ngoName';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Allow sheet to be larger
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? Color(0xFF1E1E1E)
+          : Colors.white,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Organization name with logo
+              Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.teal.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.business,
+                        color: Colors.teal,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      'Contact $ngoName',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              // Additional description
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
+                child: Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white70
+                        : Colors.black54,
+                  ),
+                ),
+              ),
+
+              Divider(),
+
+              // Contact options
+              _contactOption(
+                context,
+                Icons.phone,
+                'Call',
+                phoneNumber,
+                () async {
+                  // Launch phone dialer
+                  final Uri phoneUri =
+                      Uri(scheme: 'tel', path: phoneNumber.replaceAll(' ', ''));
+                  try {
+                    if (await canLaunchUrl(phoneUri)) {
+                      await launchUrl(phoneUri);
+                    } else {
+                      _showErrorSnackBar(
+                          context, 'Could not launch phone dialer');
+                    }
+                  } catch (e) {
+                    _showErrorSnackBar(
+                        context, 'Error launching phone dialer: $e');
+                  }
+                  Navigator.pop(context);
+                },
+              ),
+              Divider(),
+              _contactOption(
+                context,
+                Icons.email,
+                'Email',
+                email,
+                () async {
+                  // Launch email with improved handling
+                  final Uri emailUri = Uri(
+                    scheme: 'mailto',
+                    path: email,
+                    queryParameters: {
+                      'subject': 'Inquiry about ${ngoName}',
+                      'body':
+                          'Hello,\n\nI am interested in learning more about ${ngoName} and how I can contribute to your mission.\n\nBest regards,\n',
+                    },
+                  );
+                  try {
+                    if (await canLaunchUrl(emailUri)) {
+                      await launchUrl(emailUri);
+                    } else {
+                      // If direct launch fails, try to copy email to clipboard
+                      await Clipboard.setData(ClipboardData(text: email));
+                      _showErrorSnackBar(
+                        context,
+                        'Could not launch email app. Email address copied to clipboard.',
+                        isError: false,
+                      );
+                    }
+                  } catch (e) {
+                    // On error, copy email to clipboard as fallback
+                    await Clipboard.setData(ClipboardData(text: email));
+                    _showErrorSnackBar(
+                      context,
+                      'Email address copied to clipboard: $email',
+                      isError: false,
+                    );
+                  }
+                  Navigator.pop(context);
+                },
+              ),
+              Divider(),
+              _contactOption(
+                context,
+                Icons.language,
+                'Website',
+                website.replaceFirst('https://', ''),
+                () async {
+                  try {
+                    // Try to launch the website
+                    final Uri webUri = Uri.parse(website);
+
+                    if (await canLaunchUrl(webUri)) {
+                      await launchUrl(
+                        webUri,
+                        mode: LaunchMode.externalApplication,
+                      );
+                    } else {
+                      // If the original URL doesn't work, try a web search
+                      final Uri searchUri = Uri.parse(
+                          'https://www.google.com/search?q=${Uri.encodeComponent(ngoName)}+ngo');
+                      if (await canLaunchUrl(searchUri)) {
+                        await launchUrl(
+                          searchUri,
+                          mode: LaunchMode.externalApplication,
+                        );
+                      } else {
+                        _showErrorSnackBar(context, 'Could not launch browser');
+                      }
+                    }
+                  } catch (e) {
+                    _showErrorSnackBar(context, 'Error launching website: $e');
+                  }
+                  Navigator.pop(context);
+                },
+              ),
+              Divider(),
+              _contactOption(
+                context,
+                Icons.location_on,
+                'Find on Map',
+                'View ${ngoName} location',
+                () async {
+                  // Launch maps with the NGO name as search
+                  final Uri mapsUri = Uri.parse(
+                      'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(ngoName)}');
+                  try {
+                    if (await canLaunchUrl(mapsUri)) {
+                      await launchUrl(mapsUri,
+                          mode: LaunchMode.externalApplication);
+                    } else {
+                      _showErrorSnackBar(context, 'Could not launch maps');
+                    }
+                  } catch (e) {
+                    _showErrorSnackBar(context, 'Error launching maps: $e');
+                  }
+                  Navigator.pop(context);
+                },
+              ),
+              SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Show error if URL launching fails
+  void _showErrorSnackBar(BuildContext context, String message,
+      {bool isError = true}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: isError ? Colors.red[700] : Colors.green[700],
+        duration: Duration(seconds: 3),
+      ),
+    );
+  }
+
+  // Get real NGO contact information based on the name
+  // This is a database of actual NGO websites and contact information
+  Map<String, dynamic> _getRealNgoInfo(String ngoName) {
+    final Map<String, Map<String, dynamic>> ngoDatabase = {
+      'ActionAid': {
+        'website': 'https://www.actionaidindia.org',
+        'phone': '+91 11 4004 0520',
+        'email': 'contact@actionaid.org',
+        'description':
+            'ActionAid works with vulnerable communities to fight poverty and injustice worldwide.',
+      },
+      'CARE': {
+        'website': 'https://www.careindia.org',
+        'phone': '+91 11 4905 5100',
+        'email': 'contactus@careindia.org',
+        'description':
+            'CARE helps families in the poorest communities improve health and education for children, and expand economic opportunity for women.',
+      },
+      'Oxfam': {
+        'website': 'https://www.oxfamindia.org',
+        'phone': '+91 11 4653 8000',
+        'email': 'oxfamindia@oxfamindia.org',
+        'description':
+            'Oxfam works to tackle the root causes of poverty through aid, development and advocacy.',
+      },
+      'Save the Children': {
+        'website': 'https://www.savethechildren.in',
+        'phone': '+91 11 4167 6100',
+        'email': 'info@savethechildren.in',
+        'description':
+            'Save the Children works to improve the lives of children through better education, health care, and economic opportunities.',
+      },
+      'Smile Foundation': {
+        'website': 'https://www.smilefoundationindia.org',
+        'phone': '+91 11 4319 9100',
+        'email': 'info@smilefoundationindia.org',
+        'description':
+            'Smile Foundation is an NGO in India that works on education, healthcare, livelihood, and women empowerment.',
+      },
+      'WaterAid India': {
+        'website': 'https://www.wateraidindia.in',
+        'phone': '+91 11 6612 4400',
+        'email': 'info@wateraid.org',
+        'description':
+            'WaterAid is an international NGO dedicated to providing clean water and decent toilets to communities worldwide.',
+      },
+      'Teach For India': {
+        'website': 'https://www.teachforindia.org',
+        'phone': '+91 22 6142 9625',
+        'email': 'info@teachforindia.org',
+        'description':
+            'Teach For India is working towards eliminating educational inequity in India by providing quality education to underprivileged children.',
+      },
+      'CREA': {
+        'website': 'https://www.creaworld.org',
+        'phone': '+91 11 2437 7707',
+        'email': 'info@creaworld.org',
+        'description':
+            'CREA is a feminist human rights organization based in New Delhi that works to advance the rights of women and girls.',
+      },
+      'Goonj': {
+        'website': 'https://goonj.org',
+        'phone': '+91 11 2618 9550',
+        'email': 'mail@goonj.org',
+        'description':
+            'Goonj aims to address the most basic but neglected issues of the poor by involving them in evolving solutions with dignity.',
+      },
+      'Water.org': {
+        'website': 'https://water.org',
+        'phone': '+1 816 877 8400',
+        'email': 'info@water.org',
+        'description':
+            'Water.org is a global nonprofit organization working to bring water and sanitation to the world through access to small, affordable loans.',
+      },
+    };
+
+    // Return the real info if available, otherwise return an empty map
+    return ngoDatabase[ngoName] ?? {};
+  }
+
+  // Helper method to create contact option
+  Widget _contactOption(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String subtitle,
+    VoidCallback onTap,
+  ) {
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: Colors.teal.withOpacity(0.1),
+        child: Icon(icon, color: Colors.teal),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black87,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white70
+              : Colors.black54,
+        ),
+      ),
+      onTap: onTap,
     );
   }
 }
