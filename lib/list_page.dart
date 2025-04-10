@@ -406,7 +406,8 @@ class _ListPageState extends State<ListPage> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const AnalyticsPage(),
+                                    builder: (context) =>
+                                        AnalyticsPage(ngoData: ngo),
                                   ),
                                 );
                               },
