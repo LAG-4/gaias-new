@@ -5,6 +5,7 @@ import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gaia/community.dart';
+import 'package:gaia/custom_drawer.dart';
 import 'package:gaia/requests.dart';
 import 'package:gaia/homepage.dart';
 import 'package:gaia/list_page.dart';
@@ -21,6 +22,7 @@ class DamnTime extends StatefulWidget {
 class _DamnTimeState extends State<DamnTime> {
   int _currentIndex = 0;
   PageController _pageController = PageController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -42,6 +44,22 @@ class _DamnTimeState extends State<DamnTime> {
     Icons.groups_rounded,
   ];
 
+  // Get the page title based on the current index
+  String _getPageTitle() {
+    switch (_currentIndex) {
+      case 0:
+        return "GAIA'S TOUCH";
+      case 1:
+        return "NGO LIST";
+      case 2:
+        return "REQUESTS";
+      case 3:
+        return "COMMUNITY";
+      default:
+        return "GAIA'S TOUCH";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -51,20 +69,56 @@ class _DamnTimeState extends State<DamnTime> {
         isDarkMode ? const Color(0xFF262626) : Colors.grey[100];
 
     return Scaffold(
+      key: _scaffoldKey,
       extendBody: true,
-      body: SizedBox.expand(
-        child: PageView(
-          controller: _pageController,
-          onPageChanged: (index) {
-            setState(() => _currentIndex = index);
-          },
-          children: <Widget>[
-            HomePage(),
-            ListPage(),
-            RequestPage(),
-            CommunityPage(),
-          ],
+      drawer: const CustomDrawer(),
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF1E1E1E)
+            : Colors.white,
+        elevation: 0,
+        shape: Border(
+          bottom: BorderSide(width: 2, color: Colors.teal[400]!),
         ),
+        centerTitle: true,
+        title: Text(
+          _getPageTitle(),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+            fontFamily: 'Habibi',
+            letterSpacing: 1.2,
+          ),
+        ),
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              icon: Icon(
+                Icons.menu,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
+              ),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
+        ),
+      ),
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() => _currentIndex = index);
+        },
+        children: <Widget>[
+          HomePage(),
+          ListPage(),
+          RequestPage(),
+          CommunityPage(),
+        ],
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(

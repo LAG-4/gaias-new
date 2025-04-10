@@ -1,20 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:gaia/base_page.dart';
 import 'package:gaia/mycontributions.dart';
 import 'package:gaia/myrewards.dart';
 import 'package:gaia/theme_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-// Custom clipper for full-height drawer
-class _DrawerClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    return Path()..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
-}
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -43,173 +33,140 @@ class _HomePageState extends State<HomePage> {
     "assets/image 16.png",
     "assets/image 17.png",
   ];
+
+  // Add goal titles for search functionality
+  List<String> goalTitles = [
+    "NO POVERTY",
+    "ZERO HUNGER",
+    "GOOD HEALTH & WELL-BEING",
+    "QUALITY EDUCATION",
+    "GENDER EQUALITY",
+    "CLEAN WATER & SANITATION",
+    "AFFORDABLE & CLEAN ENERGY",
+    "DECENT WORK & ECONOMIC GROWTH",
+    "INDUSTRY, INNOVATION & INFRASTRUCTURE",
+    "REDUCED INEQUALITIES",
+    "SUSTAINABLE CITIES & COMMUNITIES",
+    "RESPONSIBLE CONSUMPTION & PRODUCTION",
+    "CLIMATE ACTION",
+    "LIFE BELOW WATER",
+    "LIFE ON LAND",
+    "PEACE, JUSTICE AND STRONG INSTITUTIONS",
+    "PARTNERSHIPS FOR THE GOALS",
+  ];
+
+  // Search controller and filtered list
+  TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  List<int> _filteredIndices = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with all indices
+    _filteredIndices = List.generate(imageList.length, (index) => index);
+
+    // Add listener to search controller
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  // Search functionality
+  void _onSearchChanged() {
+    setState(() {
+      _searchQuery = _searchController.text.toLowerCase();
+      if (_searchQuery.isEmpty) {
+        // If search is empty, show all goals
+        _filteredIndices = List.generate(imageList.length, (index) => index);
+      } else {
+        // Filter goals based on search query
+        _filteredIndices = [];
+        for (int i = 0; i < goalTitles.length; i++) {
+          if (goalTitles[i].toLowerCase().contains(_searchQuery)) {
+            _filteredIndices.add(i);
+          }
+        }
+      }
+    });
+  }
+
+  // Helper method to open dialog based on index
+  void _openDialogForGoal(int index) {
+    switch (index) {
+      case 0:
+        openDialog1();
+        break;
+      case 1:
+        openDialog2();
+        break;
+      case 2:
+        openDialog3();
+        break;
+      case 3:
+        openDialog4();
+        break;
+      case 4:
+        openDialog5();
+        break;
+      case 5:
+        openDialog6();
+        break;
+      case 6:
+        openDialog7();
+        break;
+      case 7:
+        openDialog8();
+        break;
+      case 8:
+        openDialog9();
+        break;
+      case 9:
+        openDialog10();
+        break;
+      case 10:
+        openDialog11();
+        break;
+      case 11:
+        openDialog12();
+        break;
+      case 12:
+        openDialog13();
+        break;
+      case 13:
+        openDialog14();
+        break;
+      case 14:
+        openDialog15();
+        break;
+      case 15:
+        openDialog16();
+        break;
+      case 16:
+        openDialog17();
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: Builder(
-          builder: (context) {
-            return IconButton(
-              icon: Icon(
-                Icons.menu,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : Colors.black,
-              ),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
-          },
-        ),
-        shape: Border(
-          bottom: BorderSide(width: 2, color: Colors.teal[400]!),
-        ),
-        automaticallyImplyLeading: false,
-        backgroundColor: Theme.of(context).brightness == Brightness.dark
-            ? const Color(0xFF1E1E1E)
-            : Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          "GAIA'S TOUCH",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black,
-            fontFamily: 'Habibi',
-            letterSpacing: 1.2,
-          ),
-        ),
-      ),
-      drawerEnableOpenDragGesture: true,
-      drawerEdgeDragWidth: 60,
-      drawer: ClipPath(
-        clipper: _DrawerClipper(),
-        child: Drawer(
-          width: MediaQuery.of(context).size.width * 0.85,
-          backgroundColor: Theme.of(context).brightness == Brightness.dark
-              ? const Color(0xFF1E1E1E)
-              : Colors.white,
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.teal[300]!,
-                      Colors.teal[400]!,
-                      Colors.teal[600]!,
-                    ],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.teal.withOpacity(0.3),
-                      spreadRadius: 1,
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const Text(
-                  'Welcome, LAG',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 26,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              ListTile(
-                leading:
-                    const Icon(Icons.volunteer_activism, color: Colors.teal),
-                title: Text(
-                  'My Contributions',
-                  style: TextStyle(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black,
-                    fontFamily: 'Inter',
-                  ),
-                ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const MyContributions()),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.card_giftcard, color: Colors.teal),
-                title: Text(
-                  'My Reward Points',
-                  style: TextStyle(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black,
-                    fontFamily: 'Inter',
-                  ),
-                ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const MyRewards()),
-                  );
-                },
-              ),
-              Divider(
-                color: Colors.teal.withOpacity(0.3),
-                thickness: 1,
-                indent: 16,
-                endIndent: 16,
-              ),
-              ListTile(
-                leading: Icon(
-                  themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                  color: Colors.teal,
-                ),
-                title: Text(
-                  themeProvider.isDarkMode ? 'Dark Mode' : 'Light Mode',
-                  style: TextStyle(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black,
-                    fontFamily: 'Inter',
-                  ),
-                ),
-                trailing: Switch(
-                  value: themeProvider.isDarkMode,
-                  onChanged: (_) {
-                    themeProvider.toggleTheme();
-                  },
-                  activeColor: Colors.teal,
-                  activeTrackColor: Colors.teal.withOpacity(0.3),
-                  inactiveThumbColor: Colors.grey,
-                  inactiveTrackColor: Colors.grey.withOpacity(0.3),
-                ),
-                onTap: () {
-                  themeProvider.toggleTheme();
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
+    return BasePage(
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 80),
         child: Column(
           children: [
+            // Search bar
             Padding(
               padding: const EdgeInsets.all(14.0),
               child: TextField(
+                controller: _searchController,
                 style: TextStyle(
                     color: Theme.of(context).brightness == Brightness.dark
                         ? Colors.white
@@ -224,10 +181,19 @@ class _HomePageState extends State<HomePage> {
                   fillColor: Theme.of(context).brightness == Brightness.dark
                       ? const Color(0xFF2C2C2C)
                       : Colors.grey[200],
-                  labelText: 'Search',
+                  labelText: 'Search Goals',
+                  hintText: 'Search by goal name...',
                   labelStyle:
                       TextStyle(color: Colors.grey, fontFamily: 'Inter'),
                   prefixIcon: Icon(Icons.search, color: Colors.teal),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(Icons.clear, color: Colors.grey),
+                          onPressed: () {
+                            _searchController.clear();
+                          },
+                        )
+                      : null,
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: Colors.teal[400]!),
@@ -235,6 +201,8 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
+
+            // Title for goals section
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               child: Text(
@@ -250,207 +218,95 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                InkWell(
-                  child: Image(
-                    image: AssetImage(imageList[0]),
-                    height: 100,
+
+            // No results message
+            if (_filteredIndices.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Center(
+                  child: Text(
+                    'No goals found for "$_searchQuery"',
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white70
+                          : Colors.black54,
+                      fontSize: 16,
+                    ),
                   ),
-                  onTap: () {
-                    openDialog1();
-                  },
                 ),
-                InkWell(
-                  child: Image(
-                    image: AssetImage(imageList[1]),
-                    height: 100,
-                  ),
-                  onTap: () {
-                    openDialog2();
-                  },
+              ),
+
+            // Display goals in rows of 3 (or fewer for the last row)
+            if (_filteredIndices.isNotEmpty) ...[
+              for (int i = 0; i < _filteredIndices.length; i += 3) ...[
+                // Each row contains up to 3 goals
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // First goal in row
+                    if (i < _filteredIndices.length)
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: InkWell(
+                            child: Image(
+                              image: AssetImage(imageList[_filteredIndices[i]]),
+                              height: 100,
+                            ),
+                            onTap: () =>
+                                _openDialogForGoal(_filteredIndices[i]),
+                          ),
+                        ),
+                      )
+                    else
+                      Expanded(child: Container()),
+
+                    // Second goal in row (if exists)
+                    if (i + 1 < _filteredIndices.length)
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: InkWell(
+                            child: Image(
+                              image: AssetImage(
+                                  imageList[_filteredIndices[i + 1]]),
+                              height: 100,
+                            ),
+                            onTap: () =>
+                                _openDialogForGoal(_filteredIndices[i + 1]),
+                          ),
+                        ),
+                      )
+                    else
+                      Expanded(child: Container()),
+
+                    // Third goal in row (if exists)
+                    if (i + 2 < _filteredIndices.length)
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: InkWell(
+                            child: Image(
+                              image: AssetImage(
+                                  imageList[_filteredIndices[i + 2]]),
+                              height: 100,
+                            ),
+                            onTap: () =>
+                                _openDialogForGoal(_filteredIndices[i + 2]),
+                          ),
+                        ),
+                      )
+                    else
+                      Expanded(child: Container()),
+                  ],
                 ),
-                InkWell(
-                  child: Image(
-                    image: AssetImage(imageList[2]),
-                    height: 100,
-                  ),
-                  onTap: () {
-                    openDialog3();
-                  },
-                ),
+
+                // Spacer between rows
+                if (i + 3 < _filteredIndices.length) SizedBox(height: 25),
               ],
-            ),
-            SizedBox(
-              height: 25,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                InkWell(
-                  child: Image(
-                    image: AssetImage(imageList[3]),
-                    height: 100,
-                  ),
-                  onTap: () {
-                    openDialog4();
-                  },
-                ),
-                InkWell(
-                  child: Image(
-                    image: AssetImage(imageList[4]),
-                    height: 100,
-                  ),
-                  onTap: () {
-                    openDialog5();
-                  },
-                ),
-                InkWell(
-                  child: Image(
-                    image: AssetImage(imageList[5]),
-                    height: 100,
-                  ),
-                  onTap: () {
-                    openDialog6();
-                  },
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 25,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                InkWell(
-                  child: Image(
-                    image: AssetImage(imageList[6]),
-                    height: 100,
-                  ),
-                  onTap: () {
-                    openDialog7();
-                  },
-                ),
-                InkWell(
-                  child: Image(
-                    image: AssetImage(imageList[7]),
-                    height: 100,
-                  ),
-                  onTap: () {
-                    openDialog8();
-                  },
-                ),
-                InkWell(
-                  child: Image(
-                    image: AssetImage(imageList[8]),
-                    height: 100,
-                  ),
-                  onTap: () {
-                    openDialog9();
-                  },
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 25,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                InkWell(
-                  child: Image(
-                    image: AssetImage(imageList[9]),
-                    height: 100,
-                  ),
-                  onTap: () {
-                    openDialog10();
-                  },
-                ),
-                InkWell(
-                  child: Image(
-                    image: AssetImage(imageList[10]),
-                    height: 100,
-                  ),
-                  onTap: () {
-                    openDialog11();
-                  },
-                ),
-                InkWell(
-                  child: Image(
-                    image: AssetImage(imageList[11]),
-                    height: 100,
-                  ),
-                  onTap: () {
-                    openDialog12();
-                  },
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 25,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                InkWell(
-                  child: Image(
-                    image: AssetImage(imageList[12]),
-                    height: 100,
-                  ),
-                  onTap: () {
-                    openDialog13();
-                  },
-                ),
-                InkWell(
-                  child: Image(
-                    image: AssetImage(imageList[13]),
-                    height: 100,
-                  ),
-                  onTap: () {
-                    openDialog14();
-                  },
-                ),
-                InkWell(
-                  child: Image(
-                    image: AssetImage(imageList[14]),
-                    height: 100,
-                  ),
-                  onTap: () {
-                    openDialog15();
-                  },
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 25,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                InkWell(
-                  child: Image(
-                    image: AssetImage(imageList[15]),
-                    height: 100,
-                  ),
-                  onTap: () {
-                    openDialog16();
-                  },
-                ),
-                InkWell(
-                  child: Image(
-                    image: AssetImage(imageList[16]),
-                    height: 100,
-                  ),
-                  onTap: () {
-                    openDialog17();
-                  },
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 30,
-            ),
+            ],
+
+            SizedBox(height: 30),
           ],
         ),
       ),
