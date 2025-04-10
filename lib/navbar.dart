@@ -1,4 +1,3 @@
-
 import 'dart:ui';
 
 import 'package:bottom_navy_bar/bottom_navy_bar.dart';
@@ -7,11 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gaia/community.dart';
 import 'package:gaia/requests.dart';
-
-import 'homepage.dart';
-import 'list_page.dart';
-
-
+import 'package:gaia/homepage.dart';
+import 'package:gaia/list_page.dart';
 
 class DamnTime extends StatefulWidget {
   const DamnTime({super.key});
@@ -23,7 +19,6 @@ class DamnTime extends StatefulWidget {
 class _DamnTimeState extends State<DamnTime> {
   int _currentIndex = 0;
   PageController _pageController = PageController();
-
 
   @override
   void initState() {
@@ -37,20 +32,24 @@ class _DamnTimeState extends State<DamnTime> {
     super.dispose();
   }
 
+  // Custom icons and colors for navbar
+  final List<IconData> _icons = [
+    Icons.home_rounded,
+    Icons.volunteer_activism_rounded,
+    Icons.campaign_rounded,
+    Icons.groups_rounded,
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       body: SizedBox.expand(
         child: PageView(
           controller: _pageController,
           onPageChanged: (index) {
-            if (index == 3) {
-            }
-            if (index == 1) {
-            }
             setState(() => _currentIndex = index);
           },
-
           children: <Widget>[
             HomePage(),
             ListPage(),
@@ -60,82 +59,76 @@ class _DamnTimeState extends State<DamnTime> {
         ),
       ),
       bottomNavigationBar: Container(
-        color: Colors.deepPurple,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(25, 12, 25, 12),
-          child: BottomNavyBar(
-            backgroundColor: Colors.deepPurple,
-            showElevation: false,
-            selectedIndex: _currentIndex,
-            // onItemSelected: (int i){
-            //   if(true){
-            //     print("hello");
-            //   }}
-            // ,
-            onItemSelected: (index) {
-              if (index == 3) {
-              }
-              if (_currentIndex == 3) {
-
-              }
-              if (index == 1) {
-
-              }
-              if (_currentIndex == 1) {
-
-              }
-              setState(() => _currentIndex = index);
-              _pageController.jumpToPage(index);
-            },
-            items: <BottomNavyBarItem>[
-              BottomNavyBarItem(
-                title: const Text('Home',style: TextStyle(fontFamily: 'Inter'),),
-                // icon: Icon(Icons.home),
-                icon: const Icon(
-                  Icons.home_rounded,
-                  size: 22,color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-                activeColor: Colors.white,
-                inactiveColor: Colors.white,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A1A),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.teal.withOpacity(0.15),
+              blurRadius: 12,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            child: Container(
+              height: 56,
+              decoration: BoxDecoration(
+                color: const Color(0xFF262626),
+                borderRadius: BorderRadius.circular(16),
               ),
-              BottomNavyBarItem(
-                title: const Text("NGO's LIST",style: TextStyle(fontFamily: 'Inter',),),
-                // icon: Icon(Icons.library_books),
-                icon: const Icon(
-                  Icons.list_alt_rounded,
-                  size: 22,color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-                activeColor: Colors.white,
-                inactiveColor: Colors.white,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: List.generate(4, (index) {
+                  return _buildNavItem(index);
+                }),
               ),
-              BottomNavyBarItem(
-                title: const Text('Requests',style: TextStyle(fontFamily: 'Inter'),),
-                // icon: Icon(Icons.stars),
-                icon: const Icon(
-                  Icons.notifications_active_rounded,
-                  size: 22,color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-                activeColor: Colors.white,
-                inactiveColor: Colors.white,
-              ),
-
-              BottomNavyBarItem(
-                title: const Text('Community',style: TextStyle(fontFamily: 'Inter'),),
-                // icon: Icon(Icons.stars),
-                icon: const Icon(
-                  Icons.comment,
-                  size: 22,color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-                activeColor: Colors.white,
-                inactiveColor: Colors.white,
-              ),
-
-            ],
+            ),
           ),
+        ),
+      ),
+    );
+  }
+
+  // Build individual navigation items
+  Widget _buildNavItem(int index) {
+    final isSelected = index == _currentIndex;
+
+    return InkWell(
+      onTap: () {
+        setState(() => _currentIndex = index);
+        _pageController.jumpToPage(index);
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        height: 40,
+        width: 64,
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.teal.withOpacity(0.2) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Icon(
+              _icons[index],
+              color: isSelected ? Colors.teal[400] : Colors.white,
+              size: 24,
+            ),
+            if (isSelected)
+              Positioned(
+                bottom: 6,
+                child: Container(
+                  width: 4,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.teal[400],
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
