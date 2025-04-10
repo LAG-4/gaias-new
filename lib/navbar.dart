@@ -8,6 +8,8 @@ import 'package:gaia/community.dart';
 import 'package:gaia/requests.dart';
 import 'package:gaia/homepage.dart';
 import 'package:gaia/list_page.dart';
+import 'package:gaia/theme_provider.dart';
+import 'package:provider/provider.dart';
 
 class DamnTime extends StatefulWidget {
   const DamnTime({super.key});
@@ -42,6 +44,12 @@ class _DamnTimeState extends State<DamnTime> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final navbarBackgroundColor =
+        isDarkMode ? const Color(0xFF1A1A1A) : Colors.white;
+    final navbarItemBackgroundColor =
+        isDarkMode ? const Color(0xFF262626) : Colors.grey[100];
+
     return Scaffold(
       extendBody: true,
       body: SizedBox.expand(
@@ -60,7 +68,7 @@ class _DamnTimeState extends State<DamnTime> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
+          color: navbarBackgroundColor,
           boxShadow: [
             BoxShadow(
               color: Colors.teal.withOpacity(0.15),
@@ -75,7 +83,7 @@ class _DamnTimeState extends State<DamnTime> {
             child: Container(
               height: 56,
               decoration: BoxDecoration(
-                color: const Color(0xFF262626),
+                color: navbarItemBackgroundColor,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
@@ -94,6 +102,7 @@ class _DamnTimeState extends State<DamnTime> {
   // Build individual navigation items
   Widget _buildNavItem(int index) {
     final isSelected = index == _currentIndex;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return InkWell(
       onTap: () {
@@ -113,7 +122,11 @@ class _DamnTimeState extends State<DamnTime> {
           children: [
             Icon(
               _icons[index],
-              color: isSelected ? Colors.teal[400] : Colors.white,
+              color: isSelected
+                  ? Colors.teal[400]
+                  : isDarkMode
+                      ? Colors.white
+                      : Colors.black54,
               size: 24,
             ),
             if (isSelected)

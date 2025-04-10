@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gaia/homepage.dart';
+import 'package:gaia/theme_provider.dart';
+import 'package:provider/provider.dart';
 import 'dart:async';
 
 import 'navbar.dart';
@@ -44,8 +46,29 @@ class _LoginPageState extends State<LoginPage>
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Color(0xFF121212),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: IconButton(
+              icon: Icon(
+                isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                color: Colors.teal,
+              ),
+              onPressed: () {
+                themeProvider.toggleTheme();
+              },
+            ),
+          ),
+        ],
+      ),
+      backgroundColor: isDarkMode ? const Color(0xFF121212) : Colors.grey[100],
       body: Center(
         child: SingleChildScrollView(
           child: Column(
@@ -134,55 +157,56 @@ class _LoginPageState extends State<LoginPage>
                 padding: const EdgeInsets.all(18.0),
                 child: Image.asset('assets/img.png'),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.teal[300]!,
-                        Colors.teal[400]!,
+              AnimatedOpacity(
+                duration: const Duration(milliseconds: 800),
+                opacity: _isExpanded ? 1.0 : 0.0,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.teal[300]!,
+                          Colors.teal[400]!,
+                        ],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.teal.withOpacity(0.3),
+                          spreadRadius: 1,
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
                       ],
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.teal.withOpacity(0.3),
-                        spreadRadius: 1,
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        onPressed: () {},
-                        icon: Icon(Icons.g_mobiledata_rounded, size: 30),
-                        color: Colors.black,
-                      ),
-                      TextButton(
-                        child: const Text(
-                          'Sign in With Google',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          onPressed: () {},
+                          icon:
+                              const Icon(Icons.g_mobiledata_rounded, size: 30),
+                          color: Colors.black,
                         ),
-                        onPressed: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => DamnTime()));
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(builder: (context) => const HomePage()),
-                          // );
-                        },
-                      ),
-                    ],
+                        TextButton(
+                          child: const Text(
+                            'Sign in With Google',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => DamnTime()));
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

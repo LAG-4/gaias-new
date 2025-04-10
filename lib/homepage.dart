@@ -52,9 +52,11 @@ class _HomePageState extends State<HomePage> {
         leading: Builder(
           builder: (context) {
             return IconButton(
-              icon: const Icon(
+              icon: Icon(
                 Icons.menu,
-                color: Colors.white,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
               ),
               onPressed: () {
                 Scaffold.of(context).openDrawer();
@@ -62,18 +64,22 @@ class _HomePageState extends State<HomePage> {
             );
           },
         ),
-        shape: const Border(
-          bottom: BorderSide(width: 2, color: Color(0xFF26A69A)),
+        shape: Border(
+          bottom: BorderSide(width: 2, color: Colors.teal[400]!),
         ),
         automaticallyImplyLeading: false,
-        backgroundColor: Color(0xFF1E1E1E),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF1E1E1E)
+            : Colors.white,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           "GAIA'S TOUCH",
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
             fontFamily: 'Habibi',
             letterSpacing: 1.2,
           ),
@@ -112,7 +118,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
                 child: const Text(
-                  'Welcome, Harshvardhan',
+                  'Welcome, LAG',
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 26,
@@ -204,19 +210,24 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: const EdgeInsets.all(14.0),
               child: TextField(
-                style:
-                    const TextStyle(color: Colors.white, fontFamily: 'Inter'),
+                style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
+                    fontFamily: 'Inter'),
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
                   ),
                   filled: true,
-                  fillColor: const Color(0xFF2C2C2C),
+                  fillColor: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFF2C2C2C)
+                      : Colors.grey[200],
                   labelText: 'Search',
                   labelStyle:
-                      const TextStyle(color: Colors.grey, fontFamily: 'Inter'),
-                  prefixIcon: const Icon(Icons.search, color: Colors.teal),
+                      TextStyle(color: Colors.grey, fontFamily: 'Inter'),
+                  prefixIcon: Icon(Icons.search, color: Colors.teal),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: Colors.teal[400]!),
@@ -224,13 +235,15 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            const Padding(
+            Padding(
               padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               child: Text(
                 'SELECT YOUR TARGETED GOAL',
                 style: TextStyle(
                   fontFamily: 'Inter',
-                  color: Colors.white,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.0,
