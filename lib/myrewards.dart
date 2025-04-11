@@ -4,6 +4,7 @@ import 'package:gaia/requests.dart';
 import 'package:provider/provider.dart';
 import 'package:gaia/theme_provider.dart';
 import 'dart:math' as math;
+import 'package:gaia/navbar.dart';
 
 class RewardCategory {
   final IconData icon;
@@ -171,7 +172,8 @@ class _MyRewardsState extends State<MyRewards>
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const RequestPage()),
+                          builder: (context) => DamnTime(initialIndex: 2),
+                        ),
                       );
                     },
                     theme: theme,

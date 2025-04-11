@@ -13,21 +13,24 @@ import 'package:gaia/theme_provider.dart';
 import 'package:provider/provider.dart';
 
 class DamnTime extends StatefulWidget {
-  const DamnTime({super.key});
+  final int initialIndex;
+
+  const DamnTime({super.key, this.initialIndex = 0});
 
   @override
   _DamnTimeState createState() => _DamnTimeState();
 }
 
 class _DamnTimeState extends State<DamnTime> {
-  int _currentIndex = 0;
-  PageController _pageController = PageController();
+  late int _currentIndex;
+  late PageController _pageController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
   }
 
   @override

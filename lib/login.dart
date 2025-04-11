@@ -84,7 +84,7 @@ class _LoginPageState extends State<LoginPage>
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 800),
                         curve: Curves.easeOutQuart,
-                        height: 140,
+                        height: 150,
                         width: _isExpanded ? 300 : 0,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
@@ -135,6 +135,7 @@ class _LoginPageState extends State<LoginPage>
                                   ],
                                 ),
                               ),
+                              SizedBox(height: 5),
                               Text(
                                 'TOUCH',
                                 style: TextStyle(

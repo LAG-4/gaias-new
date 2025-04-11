@@ -104,14 +104,17 @@ class _ListPageState extends State<ListPage> {
 
     // Simulate network delay
     Future.delayed(Duration(seconds: 1), () {
-      setState(() {
-        // Select a random city from the list
-        _cityName = _cities[DateTime.now().millisecond % _cities.length];
-        _isLoading = false;
+      // Check if widget is still mounted before calling setState
+      if (mounted) {
+        setState(() {
+          // Select a random city from the list
+          _cityName = _cities[DateTime.now().millisecond % _cities.length];
+          _isLoading = false;
 
-        // Filter NGOs based on selected city
-        _filterNGOs();
-      });
+          // Filter NGOs based on selected city
+          _filterNGOs();
+        });
+      }
     });
   }
 
