@@ -6,14 +6,14 @@ import 'package:gaia/theme_provider.dart';
 import 'dart:math' as math;
 
 class RewardCategory {
-  final String name;
   final IconData icon;
   final Color color;
+  final int points;
 
   RewardCategory({
-    required this.name,
     required this.icon,
     required this.color,
+    required this.points,
   });
 }
 
@@ -32,24 +32,24 @@ class _MyRewardsState extends State<MyRewards>
 
   final List<RewardCategory> _categories = [
     RewardCategory(
-      name: 'Environmental',
       icon: Icons.eco,
       color: Colors.green,
+      points: 45,
     ),
     RewardCategory(
-      name: 'Education',
       icon: Icons.school,
       color: Colors.blue,
+      points: 32,
     ),
     RewardCategory(
-      name: 'Health',
       icon: Icons.favorite,
       color: Colors.red,
+      points: 25,
     ),
     RewardCategory(
-      name: 'Community',
       icon: Icons.people,
       color: Colors.orange,
+      points: 17,
     ),
   ];
 
@@ -116,20 +116,37 @@ class _MyRewardsState extends State<MyRewards>
                   ),
                   SizedBox(height: 16),
 
-                  // Categories Grid
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      childAspectRatio: 1.5,
+                  // Categories Graph
+                  Container(
+                    height: 220,
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: theme.cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    itemCount: _categories.length,
-                    itemBuilder: (context, index) {
-                      return _buildCategoryCard(_categories[index], theme);
-                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Points Distribution',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Expanded(
+                          child: _buildCategoriesGraph(theme),
+                        ),
+                      ],
+                    ),
                   ),
 
                   SizedBox(height: 24),
@@ -338,38 +355,113 @@ class _MyRewardsState extends State<MyRewards>
     );
   }
 
-  Widget _buildCategoryCard(RewardCategory category, ThemeData theme) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: InkWell(
-        onTap: () {},
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                category.icon,
-                size: 30,
-                color: category.color,
-              ),
-              SizedBox(height: 8),
-              Text(
-                category.name,
+  Widget _buildCategoriesGraph(ThemeData theme) {
+    // Calculate total points
+    final totalCategoryPoints =
+        _categories.fold<int>(0, (sum, category) => sum + category.points);
+
+    return Row(
+      children: [
+        // Y-axis labels
+        Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text('50',
                 style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+                    fontSize: 10,
+                    color: theme.colorScheme.onSurface.withOpacity(0.6))),
+            Text('40',
+                style: TextStyle(
+                    fontSize: 10,
+                    color: theme.colorScheme.onSurface.withOpacity(0.6))),
+            Text('30',
+                style: TextStyle(
+                    fontSize: 10,
+                    color: theme.colorScheme.onSurface.withOpacity(0.6))),
+            Text('20',
+                style: TextStyle(
+                    fontSize: 10,
+                    color: theme.colorScheme.onSurface.withOpacity(0.6))),
+            Text('10',
+                style: TextStyle(
+                    fontSize: 10,
+                    color: theme.colorScheme.onSurface.withOpacity(0.6))),
+            Text('0',
+                style: TextStyle(
+                    fontSize: 10,
+                    color: theme.colorScheme.onSurface.withOpacity(0.6))),
+          ],
+        ),
+        SizedBox(width: 8),
+
+        // Graph
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                left: BorderSide(
+                  color: theme.colorScheme.onSurface.withOpacity(0.1),
+                  width: 1,
                 ),
-                textAlign: TextAlign.center,
+                bottom: BorderSide(
+                  color: theme.colorScheme.onSurface.withOpacity(0.1),
+                  width: 1,
+                ),
               ),
-            ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: _categories.map((category) {
+                // Calculate bar height based on points (max height for 50 points)
+                double barHeight = (category.points / 50) * 125;
+
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    // Bar value
+                    Text(
+                      '${category.points}',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: category.color,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+
+                    // Animated bar
+                    TweenAnimationBuilder<double>(
+                      tween: Tween<double>(begin: 0, end: barHeight),
+                      duration: Duration(seconds: 1, milliseconds: 500),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, value, child) {
+                        return Container(
+                          width: 30,
+                          height: value,
+                          decoration: BoxDecoration(
+                            color: category.color.withOpacity(0.7),
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(4),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    SizedBox(height: 4),
+
+                    // Category icon
+                    Icon(category.icon, size: 14, color: category.color),
+
+                    // Category name
+                  ],
+                );
+              }).toList(),
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 
