@@ -44,6 +44,9 @@ class _CommunityPageState extends State<CommunityPage>
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
 
+  // Set to track liked posts by their ID
+  Set<String> _likedPosts = {};
+
   // Mock data - to be replaced with Firebase data
   final List<CommunityPost> _posts = [
     CommunityPost(
@@ -436,6 +439,10 @@ class _CommunityPageState extends State<CommunityPage>
         categoryColor = Colors.grey;
     }
 
+    // Check if this post is liked
+    final isLiked = _likedPosts.contains(post.id);
+    final likeCount = isLiked ? post.likes + 1 : post.likes;
+
     return Card(
       margin: EdgeInsets.only(bottom: 16),
       elevation: 2,
@@ -620,51 +627,25 @@ class _CommunityPageState extends State<CommunityPage>
                 // Like button
                 InkWell(
                   borderRadius: BorderRadius.circular(20),
-                  onTap: () {
-                    // TODO: Implement like functionality
-                  },
+                  onTap: () => _toggleLike(post.id),
                   child: Padding(
                     padding: const EdgeInsets.all(6.0),
                     child: Row(
                       children: [
                         Icon(
-                          Icons.favorite_outline,
+                          isLiked ? Icons.favorite : Icons.favorite_outline,
                           size: 20,
-                          color: theme.colorScheme.onSurface.withOpacity(0.7),
+                          color: isLiked
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.onSurface.withOpacity(0.7),
                         ),
                         SizedBox(width: 6),
                         Text(
-                          post.likes.toString(),
+                          likeCount.toString(),
                           style: TextStyle(
-                            color: theme.colorScheme.onSurface.withOpacity(0.7),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(width: 16),
-                // Comment button
-                InkWell(
-                  borderRadius: BorderRadius.circular(20),
-                  onTap: () {
-                    // TODO: Implement comment functionality
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(6.0),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.chat_bubble_outline,
-                          size: 20,
-                          color: theme.colorScheme.onSurface.withOpacity(0.7),
-                        ),
-                        SizedBox(width: 6),
-                        Text(
-                          "Comment",
-                          style: TextStyle(
-                            color: theme.colorScheme.onSurface.withOpacity(0.7),
+                            color: isLiked
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.onSurface.withOpacity(0.7),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -676,15 +657,25 @@ class _CommunityPageState extends State<CommunityPage>
                 // Share button
                 InkWell(
                   borderRadius: BorderRadius.circular(20),
-                  onTap: () {
-                    // TODO: Implement share functionality
-                  },
+                  onTap: () => _sharePost(post),
                   child: Padding(
                     padding: const EdgeInsets.all(6.0),
-                    child: Icon(
-                      Icons.share_outlined,
-                      size: 20,
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.share_outlined,
+                          size: 20,
+                          color: theme.colorScheme.onSurface.withOpacity(0.7),
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          "Share",
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface.withOpacity(0.7),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -714,5 +705,33 @@ class _CommunityPageState extends State<CommunityPage>
     } else {
       return 'Just now';
     }
+  }
+
+  // Add these methods for the like and share functionality
+  void _toggleLike(String postId) {
+    setState(() {
+      if (_likedPosts.contains(postId)) {
+        _likedPosts.remove(postId);
+      } else {
+        _likedPosts.add(postId);
+      }
+    });
+  }
+
+  void _sharePost(CommunityPost post) {
+    final message =
+        "Check out this post from ${post.username}: ${post.content}";
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Sharing: $message'),
+        behavior: SnackBarBehavior.floating,
+        action: SnackBarAction(
+          label: 'CLOSE',
+          onPressed: () {},
+        ),
+      ),
+    );
+    // In a real app, you would use a package like share_plus here
+    // to implement actual sharing functionality
   }
 }
