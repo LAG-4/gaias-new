@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:math' as math;
+import 'mycontributions.dart';
 
 // Simple data models for the modern NGO page
 class FundingData {
@@ -353,10 +354,48 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                     ),
                   ),
                   onPressed: () {
+                    // Add volunteer contribution data for this NGO
+                    final DateTime now = DateTime.now();
+                    final String formattedDate =
+                        "${now.day} ${_getMonthName(now.month)} ${now.year}";
+
+                    final volunteerContribution = {
+                      "ngoName": _ngoInfo["name"],
+                      "location": _ngoInfo["location"],
+                      "description":
+                          "Volunteered for community service program",
+                      "date": formattedDate,
+                      "points": 25,
+                      "category": "Volunteer",
+                      "logoWidget": Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.green[800],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Center(
+                          child: Icon(Icons.volunteer_activism,
+                              color: Colors.white, size: 20),
+                        ),
+                      ),
+                    };
+
+                    // Navigate to the MyContributions page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => MyContributions(
+                              newContribution: volunteerContribution)),
+                    );
+
+                    // Show a toast message
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Volunteer option selected'),
+                        content: Text('Thank you for volunteering!'),
                         behavior: SnackBarBehavior.floating,
+                        backgroundColor: Colors.green,
+                        duration: Duration(seconds: 2),
                       ),
                     );
                   },
@@ -377,10 +416,13 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                     ),
                   ),
                   onPressed: () {
+                    // Show a toast message for donation
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Donate option selected'),
+                        content: Text('Thank you for your donation!'),
                         behavior: SnackBarBehavior.floating,
+                        backgroundColor: primaryColor,
+                        duration: Duration(seconds: 2),
                       ),
                     );
                   },
@@ -1535,6 +1577,25 @@ class _AnalyticsPageState extends State<AnalyticsPage>
         backgroundColor: Colors.red[700],
       ),
     );
+  }
+
+  // Helper function to get month name
+  String _getMonthName(int month) {
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ];
+    return monthNames[month - 1];
   }
 }
 
