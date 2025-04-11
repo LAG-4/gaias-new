@@ -24,6 +24,39 @@ class Contribution {
 
   // Create from a map
   factory Contribution.fromMap(Map<String, dynamic> map) {
+    // Convert string icon identifier to IconData
+    IconData iconData;
+    var iconValue = map['icon'];
+
+    if (iconValue is String) {
+      // Handle string-based icon identifiers
+      switch (iconValue) {
+        case 'money':
+          iconData = Icons.attach_money;
+          break;
+        case 'food':
+          iconData = Icons.restaurant;
+          break;
+        case 'clothes':
+          iconData = Icons.checkroom;
+          break;
+        case 'items':
+          iconData = Icons.shopping_bag;
+          break;
+        case 'volunteer':
+          iconData = Icons.people;
+          break;
+        default:
+          iconData = Icons.volunteer_activism;
+      }
+    } else if (iconValue is IconData) {
+      // Already an IconData
+      iconData = iconValue;
+    } else {
+      // Default fallback
+      iconData = Icons.volunteer_activism;
+    }
+
     return Contribution(
       ngoName: map['ngoName'] ?? '',
       location: map['location'] ?? '',
@@ -31,7 +64,7 @@ class Contribution {
       date: map['date'] ?? '',
       points: map['points'] ?? 0,
       category: map['category'] ?? 'Donation',
-      icon: map['icon'] ?? Icons.volunteer_activism,
+      icon: iconData,
     );
   }
 }
