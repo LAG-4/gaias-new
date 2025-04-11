@@ -289,18 +289,24 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                   ],
                 ),
               ),
-              bottom: TabBar(
-                controller: _tabController,
-                indicatorColor: Colors.white,
-                indicatorWeight: 3,
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.white70,
-                tabs: [
-                  Tab(text: 'ABOUT'),
-                  Tab(text: 'IMPACT'),
-                  Tab(text: 'CONTACT'),
-                ],
+            ),
+            SliverPersistentHeader(
+              delegate: _SliverAppBarDelegate(
+                tabBar: TabBar(
+                  controller: _tabController,
+                  indicatorColor: primaryColor,
+                  indicatorWeight: 3,
+                  labelColor: primaryColor,
+                  unselectedLabelColor: Colors.grey,
+                  tabs: [
+                    Tab(text: 'ABOUT'),
+                    Tab(text: 'IMPACT'),
+                    Tab(text: 'CONTACT'),
+                  ],
+                ),
+                backgroundColor: cardColor,
               ),
+              pinned: true,
             ),
           ];
         },
@@ -1528,6 +1534,36 @@ class _AnalyticsPageState extends State<AnalyticsPage>
         behavior: SnackBarBehavior.floating,
         backgroundColor: Colors.red[700],
       ),
+    );
+  }
+}
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  final TabBar tabBar;
+  final Color backgroundColor;
+
+  const _SliverAppBarDelegate({
+    required this.tabBar,
+    required this.backgroundColor,
+  });
+
+  @override
+  double get maxExtent => tabBar.preferredSize.height;
+
+  @override
+  double get minExtent => tabBar.preferredSize.height;
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
+    return false;
+  }
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: backgroundColor,
+      child: tabBar,
     );
   }
 }
