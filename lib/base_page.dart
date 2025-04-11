@@ -6,10 +6,10 @@ class BasePage extends StatelessWidget {
   final FloatingActionButton? floatingActionButton;
 
   const BasePage({
-    Key? key,
+    super.key,
     required this.body,
     this.floatingActionButton,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

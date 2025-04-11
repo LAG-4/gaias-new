@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:gaia/base_page.dart';
-import 'package:gaia/mycontributions.dart';
-import 'package:gaia/myrewards.dart';
 import 'package:gaia/theme_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   List imageList = [
     "assets/image 1.png",
     "assets/image 2.png",
@@ -62,6 +60,9 @@ class _HomePageState extends State<HomePage> {
   String _searchQuery = '';
   List<int> _filteredIndices = [];
 
+  // Animation controller for staggered grid animations
+  late AnimationController _animationController;
+
   @override
   void initState() {
     super.initState();
@@ -70,12 +71,22 @@ class _HomePageState extends State<HomePage> {
 
     // Add listener to search controller
     _searchController.addListener(_onSearchChanged);
+
+    // Initialize animation controller
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+
+    // Start the animation
+    _animationController.forward();
   }
 
   @override
   void dispose() {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -109,12 +120,45 @@ class _HomePageState extends State<HomePage> {
     // Navigate to NGO list screen
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => NgoListScreen(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => NgoListScreen(
           goalTitle: goalTitle,
           ngoList: ngoList,
           goalIndex: index,
         ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.1),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutQuint,
+                ),
+              ),
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 400),
+      ),
+    );
+  }
+
+  // Helper method to get animation for staggered grid item
+  Animation<double> _getGridItemAnimation(int index) {
+    // Calculate the delay based on the item's position
+    final double delay = (index % 6) * 0.05 + (index ~/ 6) * 0.1;
+
+    return CurvedAnimation(
+      parent: _animationController,
+      curve: Interval(
+        delay.clamp(0.0, 0.9), // Ensure delay is between 0 and 0.9
+        (delay + 0.4).clamp(0.1, 1.0), // Ensure end is between 0.1 and 1.0
+        curve: Curves.easeOutQuint,
       ),
     );
   }
@@ -314,41 +358,45 @@ class _HomePageState extends State<HomePage> {
           children: [
             // Search bar
             Padding(
-              padding: const EdgeInsets.all(14.0),
-              child: TextField(
-                controller: _searchController,
-                style: TextStyle(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black,
-                    fontFamily: 'Inter'),
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: Theme.of(context).brightness == Brightness.dark
-                      ? const Color(0xFF2C2C2C)
-                      : Colors.grey[200],
-                  labelText: 'Search Goals',
-                  hintText: 'Search by goal name...',
-                  labelStyle:
-                      TextStyle(color: Colors.grey, fontFamily: 'Inter'),
-                  prefixIcon: Icon(Icons.search, color: Colors.teal),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: Icon(Icons.clear, color: Colors.grey),
-                          onPressed: () {
-                            _searchController.clear();
-                          },
-                        )
-                      : null,
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.teal[400]!),
-                  ),
-                ),
+              padding: const EdgeInsets.all(16.0),
+              child: AnimatedBuilder(
+                animation: _animationController,
+                builder: (context, child) {
+                  return FadeTransition(
+                    opacity: CurvedAnimation(
+                      parent: _animationController,
+                      curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
+                    ),
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0, -0.2),
+                        end: Offset.zero,
+                      ).animate(
+                        CurvedAnimation(
+                          parent: _animationController,
+                          curve:
+                              const Interval(0.0, 0.4, curve: Curves.easeOut),
+                        ),
+                      ),
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Search SDG Goals...',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? const Color(0xFF2A2A2A)
+                                  : Colors.grey.shade200,
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
 
@@ -398,13 +446,34 @@ class _HomePageState extends State<HomePage> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: InkWell(
-                            child: Image(
-                              image: AssetImage(imageList[_filteredIndices[i]]),
-                              height: 100,
-                            ),
-                            onTap: () => _openNgoInfoForGoal(
-                                context, _filteredIndices[i]),
+                          child: AnimatedBuilder(
+                            animation: _getGridItemAnimation(i),
+                            builder: (context, child) {
+                              return FadeTransition(
+                                opacity: _getGridItemAnimation(i),
+                                child: SlideTransition(
+                                  position: Tween<Offset>(
+                                    begin: const Offset(0, 0.3),
+                                    end: Offset.zero,
+                                  ).animate(_getGridItemAnimation(i)),
+                                  child: ScaleTransition(
+                                    scale: Tween<double>(
+                                      begin: 0.8,
+                                      end: 1.0,
+                                    ).animate(_getGridItemAnimation(i)),
+                                    child: InkWell(
+                                      child: Image(
+                                        image: AssetImage(
+                                            imageList[_filteredIndices[i]]),
+                                        height: 100,
+                                      ),
+                                      onTap: () => _openNgoInfoForGoal(
+                                          context, _filteredIndices[i]),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       )
@@ -416,14 +485,34 @@ class _HomePageState extends State<HomePage> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: InkWell(
-                            child: Image(
-                              image: AssetImage(
-                                  imageList[_filteredIndices[i + 1]]),
-                              height: 100,
-                            ),
-                            onTap: () => _openNgoInfoForGoal(
-                                context, _filteredIndices[i + 1]),
+                          child: AnimatedBuilder(
+                            animation: _getGridItemAnimation(i + 1),
+                            builder: (context, child) {
+                              return FadeTransition(
+                                opacity: _getGridItemAnimation(i + 1),
+                                child: SlideTransition(
+                                  position: Tween<Offset>(
+                                    begin: const Offset(0, 0.3),
+                                    end: Offset.zero,
+                                  ).animate(_getGridItemAnimation(i + 1)),
+                                  child: ScaleTransition(
+                                    scale: Tween<double>(
+                                      begin: 0.8,
+                                      end: 1.0,
+                                    ).animate(_getGridItemAnimation(i + 1)),
+                                    child: InkWell(
+                                      child: Image(
+                                        image: AssetImage(
+                                            imageList[_filteredIndices[i + 1]]),
+                                        height: 100,
+                                      ),
+                                      onTap: () => _openNgoInfoForGoal(
+                                          context, _filteredIndices[i + 1]),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       )
@@ -435,14 +524,34 @@ class _HomePageState extends State<HomePage> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: InkWell(
-                            child: Image(
-                              image: AssetImage(
-                                  imageList[_filteredIndices[i + 2]]),
-                              height: 100,
-                            ),
-                            onTap: () => _openNgoInfoForGoal(
-                                context, _filteredIndices[i + 2]),
+                          child: AnimatedBuilder(
+                            animation: _getGridItemAnimation(i + 2),
+                            builder: (context, child) {
+                              return FadeTransition(
+                                opacity: _getGridItemAnimation(i + 2),
+                                child: SlideTransition(
+                                  position: Tween<Offset>(
+                                    begin: const Offset(0, 0.3),
+                                    end: Offset.zero,
+                                  ).animate(_getGridItemAnimation(i + 2)),
+                                  child: ScaleTransition(
+                                    scale: Tween<double>(
+                                      begin: 0.8,
+                                      end: 1.0,
+                                    ).animate(_getGridItemAnimation(i + 2)),
+                                    child: InkWell(
+                                      child: Image(
+                                        image: AssetImage(
+                                            imageList[_filteredIndices[i + 2]]),
+                                        height: 100,
+                                      ),
+                                      onTap: () => _openNgoInfoForGoal(
+                                          context, _filteredIndices[i + 2]),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       )
@@ -464,18 +573,82 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// New screen to display NGO list in a more user-friendly way
+class GoalDetails extends StatelessWidget {
+  final int goalIndex;
+  final String goalTitle;
+
+  const GoalDetails({
+    super.key,
+    required this.goalIndex,
+    required this.goalTitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          goalTitle,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+            fontFamily: 'Inter',
+          ),
+        ),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF1E1E1E)
+            : Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Image.asset(
+              'assets/image ${goalIndex + 1}.png',
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Goal ${goalIndex + 1}: ${goalTitle.split('. ')[1]}',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            // Additional details would go here
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class NgoListScreen extends StatelessWidget {
   final String goalTitle;
   final List<Map<String, String>> ngoList;
   final int goalIndex;
 
   const NgoListScreen({
+    super.key,
     required this.goalTitle,
     required this.ngoList,
     required this.goalIndex,
-    Key? key,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -651,10 +824,10 @@ class NgoCard extends StatelessWidget {
   final String description;
 
   const NgoCard({
+    super.key,
     required this.name,
     required this.description,
-    Key? key,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

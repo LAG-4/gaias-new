@@ -8,12 +8,12 @@ class BaseScaffold extends StatelessWidget {
   final FloatingActionButton? floatingActionButton;
 
   const BaseScaffold({
-    Key? key,
+    super.key,
     required this.title,
     required this.body,
     this.actions,
     this.floatingActionButton,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,16 +21,22 @@ class BaseScaffold extends StatelessWidget {
       appBar: AppBar(
         leading: Builder(
           builder: (context) {
-            return IconButton(
-              icon: Icon(
-                Icons.menu,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : Colors.black,
+            return Hero(
+              tag: 'menu-icon',
+              child: Material(
+                color: Colors.transparent,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.menu,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
+                  ),
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                ),
               ),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
             );
           },
         ),
@@ -43,15 +49,21 @@ class BaseScaffold extends StatelessWidget {
             : Colors.white,
         elevation: 0,
         centerTitle: true,
-        title: Text(
-          title,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black,
-            fontFamily: 'Habibi',
-            letterSpacing: 1.2,
+        title: Hero(
+          tag: 'app-title-$title',
+          child: Material(
+            color: Colors.transparent,
+            child: Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
+                fontFamily: 'Habibi',
+                letterSpacing: 1.2,
+              ),
+            ),
           ),
         ),
         actions: actions,
@@ -59,8 +71,24 @@ class BaseScaffold extends StatelessWidget {
       drawerEnableOpenDragGesture: true,
       drawerEdgeDragWidth: 60,
       drawer: const CustomDrawer(),
-      body: body,
-      floatingActionButton: floatingActionButton,
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        child: body,
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+      ),
+      floatingActionButton: floatingActionButton != null
+          ? AnimatedScale(
+              scale: 1.0,
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              child: floatingActionButton,
+            )
+          : null,
     );
   }
 }

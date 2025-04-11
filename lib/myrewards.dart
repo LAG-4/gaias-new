@@ -19,7 +19,7 @@ class RewardCategory {
 }
 
 class MyRewards extends StatefulWidget {
-  const MyRewards({Key? key}) : super(key: key);
+  const MyRewards({super.key});
 
   @override
   State<MyRewards> createState() => _MyRewardsState();

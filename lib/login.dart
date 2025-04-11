@@ -7,7 +7,7 @@ import 'dart:async';
 import 'navbar.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -17,6 +17,8 @@ class _LoginPageState extends State<LoginPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _shadowAnimation;
+  late Animation<double> _pulseAnimation;
+  late Animation<double> _scaleAnimation;
   bool _isExpanded = false;
 
   @override
@@ -24,11 +26,29 @@ class _LoginPageState extends State<LoginPage>
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 3),
     )..repeat(reverse: true);
 
-    _shadowAnimation =
-        Tween<double>(begin: 0.3, end: 0.7).animate(_animationController);
+    _shadowAnimation = Tween<double>(begin: 0.3, end: 0.7).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.0, 0.3, curve: Curves.elasticOut),
+      ),
+    );
 
     // Start animation after a short delay
     Timer(const Duration(milliseconds: 300), () {
@@ -54,16 +74,44 @@ class _LoginPageState extends State<LoginPage>
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: IconButton(
-              icon: Icon(
-                isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                color: Colors.teal,
+          TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: 0.0, end: 1.0),
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.easeOutQuint,
+            builder: (context, value, child) {
+              return Opacity(
+                opacity: value,
+                child: Transform.translate(
+                  offset: Offset(20 * (1.0 - value), 0),
+                  child: child,
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: IconButton(
+                icon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  transitionBuilder:
+                      (Widget child, Animation<double> animation) {
+                    return ScaleTransition(
+                      scale: animation,
+                      child: RotationTransition(
+                        turns: animation,
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: Icon(
+                    isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                    key: ValueKey<bool>(isDarkMode),
+                    color: Colors.teal,
+                  ),
+                ),
+                onPressed: () {
+                  themeProvider.toggleTheme();
+                },
               ),
-              onPressed: () {
-                themeProvider.toggleTheme();
-              },
             ),
           ),
         ],
@@ -71,8 +119,8 @@ class _LoginPageState extends State<LoginPage>
       backgroundColor: isDarkMode ? const Color(0xFF121212) : Colors.grey[100],
       body: Center(
         child: SingleChildScrollView(
-          physics: AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.symmetric(vertical: 20.0),
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(vertical: 20.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -82,8 +130,8 @@ class _LoginPageState extends State<LoginPage>
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 800),
-                        curve: Curves.easeOutQuart,
+                        duration: const Duration(milliseconds: 1000),
+                        curve: Curves.elasticOut,
                         height: 150,
                         width: _isExpanded ? 300 : 0,
                         decoration: BoxDecoration(
@@ -114,116 +162,168 @@ class _LoginPageState extends State<LoginPage>
                             ),
                           ],
                         ),
-                        child: const Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                "GAIA'S",
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 34,
-                                  fontFamily: 'Habibi',
-                                  fontWeight: FontWeight.bold,
-                                  shadows: [
-                                    Shadow(
-                                      blurRadius: 10.0,
-                                      color: Color.fromARGB(50, 0, 0, 0),
-                                      offset: Offset(2.0, 2.0),
-                                    ),
-                                  ],
+                        child: Transform.scale(
+                          scale: _pulseAnimation.value,
+                          child: const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  "GAIA'S",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 34,
+                                    fontFamily: 'Habibi',
+                                    fontWeight: FontWeight.bold,
+                                    shadows: [
+                                      Shadow(
+                                        blurRadius: 10.0,
+                                        color: Color.fromARGB(50, 0, 0, 0),
+                                        offset: Offset(2.0, 2.0),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              SizedBox(height: 5),
-                              Text(
-                                'TOUCH',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 34,
-                                  fontFamily: 'Habibi',
-                                  fontWeight: FontWeight.bold,
-                                  shadows: [
-                                    Shadow(
-                                      blurRadius: 10.0,
-                                      color: Color.fromARGB(50, 0, 0, 0),
-                                      offset: Offset(2.0, 2.0),
-                                    ),
-                                  ],
+                                SizedBox(height: 5),
+                                Text(
+                                  'TOUCH',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 34,
+                                    fontFamily: 'Habibi',
+                                    fontWeight: FontWeight.bold,
+                                    shadows: [
+                                      Shadow(
+                                        blurRadius: 10.0,
+                                        color: Color.fromARGB(50, 0, 0, 0),
+                                        offset: Offset(2.0, 2.0),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     );
                   }),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 18.0, vertical: 10.0),
-                child: Image.asset(
-                  'assets/img.png',
-                  fit: BoxFit.contain,
-                  height: MediaQuery.of(context).size.height * 0.3,
-                ),
+              const SizedBox(height: 30),
+              AnimatedBuilder(
+                animation: _scaleAnimation,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _scaleAnimation.value,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18.0, vertical: 10.0),
+                      child: Image.asset(
+                        'assets/img.png',
+                        fit: BoxFit.contain,
+                        height: MediaQuery.of(context).size.height * 0.3,
+                      ),
+                    ),
+                  );
+                },
               ),
               AnimatedOpacity(
-                duration: const Duration(milliseconds: 800),
+                duration: const Duration(milliseconds: 1200),
+                curve: Curves.easeOutQuart,
                 opacity: _isExpanded ? 1.0 : 0.0,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.teal[300]!,
-                          Colors.teal[400]!,
-                        ],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.teal.withOpacity(0.3),
-                          spreadRadius: 1,
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        IconButton(
-                          onPressed: () {},
-                          icon:
-                              const Icon(Icons.g_mobiledata_rounded, size: 30),
-                          color: Colors.black,
-                          constraints: BoxConstraints(),
-                          padding: EdgeInsets.only(left: 12.0, right: 8.0),
-                        ),
-                        TextButton(
-                          child: const Text(
-                            'Sign in With Google',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                child: AnimatedPadding(
+                  duration: const Duration(milliseconds: 1200),
+                  curve: Curves.easeOutQuart,
+                  padding: EdgeInsets.only(
+                    top: _isExpanded ? 20 : 100,
+                    left: 40,
+                    right: 40,
+                  ),
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween<double>(begin: 0.8, end: 1.0),
+                    duration: const Duration(milliseconds: 1000),
+                    curve: Curves.elasticOut,
+                    builder: (context, scale, child) {
+                      return Transform.scale(
+                        scale: scale,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.teal[300]!,
+                                Colors.teal[400]!,
+                              ],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.teal.withOpacity(0.3),
+                                spreadRadius: 1,
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              splashColor: Colors.white.withOpacity(0.2),
+                              highlightColor: Colors.transparent,
+                              onTap: () {
+                                // Add a ripple effect animation before navigating
+                                Navigator.of(context).push(
+                                  PageRouteBuilder(
+                                    pageBuilder: (context, animation,
+                                            secondaryAnimation) =>
+                                        DamnTime(),
+                                    transitionsBuilder: (context, animation,
+                                        secondaryAnimation, child) {
+                                      return FadeTransition(
+                                        opacity: animation,
+                                        child: child,
+                                      );
+                                    },
+                                    transitionDuration:
+                                        const Duration(milliseconds: 600),
+                                  ),
+                                );
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 12.0, horizontal: 8.0),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.g_mobiledata_rounded,
+                                      size: 30,
+                                      color: Colors.black,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      'Sign in With Google',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
-                          onPressed: () {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => DamnTime()));
-                          },
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
             ],
           ),
         ),

@@ -30,7 +30,7 @@ class CommunityPost {
 }
 
 class CommunityPage extends StatefulWidget {
-  CommunityPage({Key? key}) : super(key: key);
+  const CommunityPage({super.key});
 
   @override
   State<CommunityPage> createState() => _CommunityPageState();
@@ -45,7 +45,7 @@ class _CommunityPageState extends State<CommunityPage>
   final FocusNode _searchFocusNode = FocusNode();
 
   // Set to track liked posts by their ID
-  Set<String> _likedPosts = {};
+  final Set<String> _likedPosts = {};
 
   // Mock data - to be replaced with Firebase data
   final List<CommunityPost> _posts = [

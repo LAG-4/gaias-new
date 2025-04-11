@@ -1,16 +1,9 @@
-import 'dart:ui';
-
-import 'package:bottom_navy_bar/bottom_navy_bar.dart';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:gaia/community.dart';
 import 'package:gaia/custom_drawer.dart';
 import 'package:gaia/requests.dart';
 import 'package:gaia/homepage.dart';
 import 'package:gaia/list_page.dart';
-import 'package:gaia/theme_provider.dart';
-import 'package:provider/provider.dart';
 
 class DamnTime extends StatefulWidget {
   final int initialIndex;
@@ -18,24 +11,60 @@ class DamnTime extends StatefulWidget {
   const DamnTime({super.key, this.initialIndex = 0});
 
   @override
-  _DamnTimeState createState() => _DamnTimeState();
+  State<DamnTime> createState() => _DamnTimeState();
 }
 
-class _DamnTimeState extends State<DamnTime> {
+class _DamnTimeState extends State<DamnTime> with TickerProviderStateMixin {
   late int _currentIndex;
   late PageController _pageController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  // Animation controllers for tab indicators and icons
+  late List<AnimationController> _iconAnimationControllers;
+  late AnimationController _indicatorAnimationController;
+  late Animation<double> _indicatorAnimation;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: widget.initialIndex);
+
+    // Initialize animation controllers for each tab
+    _iconAnimationControllers = List.generate(
+      4,
+      (index) => AnimationController(
+        duration: const Duration(milliseconds: 300),
+        vsync: this,
+      ),
+    );
+
+    // Initialize the selected tab's animation
+    _iconAnimationControllers[_currentIndex].value = 1.0;
+
+    // Animation for the indicator dot
+    _indicatorAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _indicatorAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _indicatorAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _indicatorAnimationController.forward();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    for (var controller in _iconAnimationControllers) {
+      controller.dispose();
+    }
+    _indicatorAnimationController.dispose();
     super.dispose();
   }
 
@@ -84,38 +113,70 @@ class _DamnTimeState extends State<DamnTime> {
           bottom: BorderSide(width: 2, color: Colors.teal[400]!),
         ),
         centerTitle: true,
-        title: Text(
-          _getPageTitle(),
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black,
-            fontFamily: 'Habibi',
-            letterSpacing: 1.2,
-          ),
-        ),
-        leading: Builder(
-          builder: (context) {
-            return IconButton(
-              icon: Icon(
-                Icons.menu,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : Colors.black,
+        title: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.0, 0.2),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
               ),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
             );
           },
+          child: Text(
+            _getPageTitle(),
+            key: ValueKey<String>(_getPageTitle()),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
+              fontFamily: 'Habibi',
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+        leading: Hero(
+          tag: 'menu-icon',
+          child: Material(
+            color: Colors.transparent,
+            child: Builder(
+              builder: (context) {
+                return IconButton(
+                  icon: Icon(
+                    Icons.menu,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
+                  ),
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                );
+              },
+            ),
+          ),
         ),
       ),
       body: PageView(
         controller: _pageController,
         onPageChanged: (index) {
-          setState(() => _currentIndex = index);
+          setState(() {
+            // Update animations when page changes
+            _iconAnimationControllers[_currentIndex].reverse();
+            _currentIndex = index;
+            _iconAnimationControllers[index].forward();
+
+            // Animate the indicator
+            _indicatorAnimationController.reset();
+            _indicatorAnimationController.forward();
+          });
         },
+        physics: const BouncingScrollPhysics(),
         children: <Widget>[
           HomePage(),
           ListPage(),
@@ -163,11 +224,30 @@ class _DamnTimeState extends State<DamnTime> {
 
     return InkWell(
       onTap: () {
-        setState(() => _currentIndex = index);
-        _pageController.jumpToPage(index);
+        if (_currentIndex != index) {
+          setState(() {
+            // Trigger animations
+            _iconAnimationControllers[_currentIndex].reverse();
+            _currentIndex = index;
+            _iconAnimationControllers[index].forward();
+
+            // Reset and start the indicator animation
+            _indicatorAnimationController.reset();
+            _indicatorAnimationController.forward();
+          });
+
+          // Animate to the selected page
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
       },
       borderRadius: BorderRadius.circular(16),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutQuint,
         height: 40,
         width: 64,
         decoration: BoxDecoration(
@@ -177,26 +257,44 @@ class _DamnTimeState extends State<DamnTime> {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            Icon(
-              _icons[index],
-              color: isSelected
-                  ? Colors.teal[400]
-                  : isDarkMode
-                      ? Colors.white
-                      : Colors.black54,
-              size: 24,
+            AnimatedBuilder(
+              animation: _iconAnimationControllers[index],
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: isSelected
+                      ? 1.0 + (_iconAnimationControllers[index].value * 0.2)
+                      : 1.0,
+                  child: Icon(
+                    _icons[index],
+                    color: Color.lerp(
+                      isDarkMode ? Colors.white : Colors.black54,
+                      Colors.teal[400],
+                      _iconAnimationControllers[index].value,
+                    ),
+                    size: 24,
+                  ),
+                );
+              },
             ),
             if (isSelected)
-              Positioned(
-                bottom: 6,
-                child: Container(
-                  width: 4,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.teal[400],
-                    shape: BoxShape.circle,
-                  ),
-                ),
+              AnimatedBuilder(
+                animation: _indicatorAnimation,
+                builder: (context, child) {
+                  return Positioned(
+                    bottom: 6,
+                    child: Transform.scale(
+                      scale: _indicatorAnimation.value,
+                      child: Container(
+                        width: 4,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.teal[400],
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
           ],
         ),

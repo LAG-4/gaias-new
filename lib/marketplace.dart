@@ -21,7 +21,7 @@ class MarketplaceItem {
 }
 
 class Marketplace extends StatefulWidget {
-  const Marketplace({Key? key}) : super(key: key);
+  const Marketplace({super.key});
 
   @override
   State<Marketplace> createState() => _MarketplaceState();

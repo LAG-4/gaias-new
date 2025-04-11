@@ -6,7 +6,7 @@ import 'package:gaia/base_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ListPage extends StatefulWidget {
-  const ListPage({Key? key}) : super(key: key);
+  const ListPage({super.key});
 
   @override
   State<ListPage> createState() => _ListPageState();

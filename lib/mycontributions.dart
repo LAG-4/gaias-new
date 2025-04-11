@@ -72,7 +72,7 @@ class Contribution {
 class MyContributions extends StatefulWidget {
   final Map<String, dynamic>? newContribution;
 
-  const MyContributions({Key? key, this.newContribution}) : super(key: key);
+  const MyContributions({super.key, this.newContribution});
 
   @override
   State<MyContributions> createState() => _MyContributionsState();
