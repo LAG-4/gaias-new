@@ -71,7 +71,10 @@ class _LoginPageState extends State<LoginPage>
       backgroundColor: isDarkMode ? const Color(0xFF121212) : Colors.grey[100],
       body: Center(
         child: SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.symmetric(vertical: 20.0),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               AnimatedBuilder(
                   animation: _animationController,
@@ -81,7 +84,7 @@ class _LoginPageState extends State<LoginPage>
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 800),
                         curve: Curves.easeOutQuart,
-                        height: 150,
+                        height: 140,
                         width: _isExpanded ? 300 : 0,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
@@ -114,12 +117,13 @@ class _LoginPageState extends State<LoginPage>
                         child: const Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
                                 "GAIA'S",
                                 style: TextStyle(
                                   color: Colors.black,
-                                  fontSize: 40,
+                                  fontSize: 34,
                                   fontFamily: 'Habibi',
                                   fontWeight: FontWeight.bold,
                                   shadows: [
@@ -135,7 +139,7 @@ class _LoginPageState extends State<LoginPage>
                                 'TOUCH',
                                 style: TextStyle(
                                   color: Colors.black,
-                                  fontSize: 40,
+                                  fontSize: 34,
                                   fontFamily: 'Habibi',
                                   fontWeight: FontWeight.bold,
                                   shadows: [
@@ -154,8 +158,13 @@ class _LoginPageState extends State<LoginPage>
                     );
                   }),
               Padding(
-                padding: const EdgeInsets.all(18.0),
-                child: Image.asset('assets/img.png'),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 18.0, vertical: 10.0),
+                child: Image.asset(
+                  'assets/img.png',
+                  fit: BoxFit.contain,
+                  height: MediaQuery.of(context).size.height * 0.3,
+                ),
               ),
               AnimatedOpacity(
                 duration: const Duration(milliseconds: 800),
@@ -183,6 +192,7 @@ class _LoginPageState extends State<LoginPage>
                       ],
                     ),
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         IconButton(
@@ -190,6 +200,8 @@ class _LoginPageState extends State<LoginPage>
                           icon:
                               const Icon(Icons.g_mobiledata_rounded, size: 30),
                           color: Colors.black,
+                          constraints: BoxConstraints(),
+                          padding: EdgeInsets.only(left: 12.0, right: 8.0),
                         ),
                         TextButton(
                           child: const Text(
@@ -210,6 +222,7 @@ class _LoginPageState extends State<LoginPage>
                   ),
                 ),
               ),
+              SizedBox(height: 20),
             ],
           ),
         ),
