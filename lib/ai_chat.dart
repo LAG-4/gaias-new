@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class AIChatPage extends StatefulWidget {
   const AIChatPage({super.key});
@@ -11,6 +13,21 @@ class _AIChatPageState extends State<AIChatPage> {
   final TextEditingController _messageController = TextEditingController();
   final List<ChatMessage> _messages = [];
   bool _isTyping = false;
+  late final GenerativeModel _model;
+  late final ChatSession _chat;
+
+  final String _apiKey = "AIzaSyAS7K1V6_hxbFx5oAk8avPJ3nyKdMXLyqQ";
+
+  @override
+  void initState() {
+    super.initState();
+    _model = GenerativeModel(
+      model: 'models/gemini-2.5-flash-preview-04-17',
+      apiKey: _apiKey,
+      generationConfig: GenerationConfig(),
+    );
+    _chat = _model.startChat();
+  }
 
   @override
   void dispose() {
@@ -34,18 +51,63 @@ class _AIChatPageState extends State<AIChatPage> {
     final userMessage = _messageController.text;
     _messageController.clear();
 
-    // Simulate AI response after a short delay
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        _isTyping = false;
-        _messages.add(
-          ChatMessage(
-            text: "This is a simulated response to: $userMessage",
-            isUser: false,
-          ),
-        );
-      });
+    _callGeminiApi(userMessage);
+  }
+
+  Future<void> _callGeminiApi(String message) async {
+    setState(() {
+      // Add an empty placeholder message for the AI response immediately
+      _messages.add(ChatMessage(text: "", isUser: false));
+      _isTyping = false; // Turn off thinking indicator, streaming starts
     });
+
+    try {
+      print('Starting stream for message...'); // Log stream start
+      final Stream<GenerateContentResponse> responseStream = _chat.sendMessageStream(
+        Content.text(message),
+      );
+
+      String currentResponseText = ""; // Accumulate text chunks
+      await for (final response in responseStream) {
+        final textChunk = response.text;
+        if (textChunk != null) {
+           print('Received chunk: $textChunk'); // Log chunk
+          currentResponseText += textChunk;
+          setState(() {
+            // Update the text of the last message (the placeholder we added)
+            _messages[_messages.length - 1] = ChatMessage(
+              text: currentResponseText,
+              isUser: false,
+            );
+          });
+        }
+      }
+       print('Stream finished.'); // Log stream end
+
+    } catch (e) {
+      print('Error during streaming: $e');
+      _showError('Error getting response: $e');
+      // Optionally remove the placeholder message or update it with an error
+      setState(() {
+         if (_messages.isNotEmpty && !_messages.last.isUser && _messages.last.text.isEmpty) {
+           _messages.removeLast(); // Remove empty placeholder on error
+         } else if (_messages.isNotEmpty && !_messages.last.isUser) {
+            _messages[_messages.length - 1] = ChatMessage(
+              text: "${_messages.last.text}\n\n[Error: $e]", 
+              isUser: false,
+            );
+         }
+        _isTyping = false; // Ensure indicator is off
+      });
+    }
+  }
+
+  void _showError(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
   }
 
   @override
@@ -96,77 +158,6 @@ class _AIChatPageState extends State<AIChatPage> {
                       },
                     ),
             ),
-            if (_isTyping)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: isDarkMode
-                            ? const Color(0xFF262626)
-                            : Colors.grey[200],
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isDarkMode
-                              ? Colors.grey[800]!
-                              : Colors.grey[300]!,
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          // Animated dot container
-                          Container(
-                            width: 40,
-                            height: 20,
-                            margin: const EdgeInsets.only(right: 8),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                for (int i = 0; i < 3; i++)
-                                  Container(
-                                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                                    height: 8,
-                                    width: 8,
-                                    decoration: BoxDecoration(
-                                      color: Colors.teal[400],
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: TweenAnimationBuilder<double>(
-                                      tween: Tween(begin: 0.0, end: 1.0),
-                                      duration: Duration(milliseconds: 800 + (i * 200)),
-                                      builder: (context, value, child) {
-                                        return Transform.scale(
-                                          scale: 0.6 + (0.4 * (value > 0.5 ? 1 - value : value) * 2),
-                                          child: child,
-                                        );
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.teal[400],
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                          Text(
-                            "AI is thinking",
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: isDarkMode ? Colors.white : Colors.black87,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             _buildInputArea(isDarkMode),
           ],
         ),
@@ -174,11 +165,9 @@ class _AIChatPageState extends State<AIChatPage> {
     );
   }
 
-  // Method for the empty state UI
   Widget _buildEmptyState(bool isDarkMode) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Adjust UI based on available height
         final bool isSmallScreen = constraints.maxHeight < 500;
         
         return SingleChildScrollView(
@@ -223,18 +212,6 @@ class _AIChatPageState extends State<AIChatPage> {
                   ),
                 ),
                 SizedBox(height: isSmallScreen ? 24 : 32),
-                Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    _buildSuggestionChip("Explain quantum computing"),
-                    _buildSuggestionChip("Write a poem about nature"),
-                    _buildSuggestionChip("Recommend books to read"),
-                    _buildSuggestionChip("Tell me a fun fact"),
-                  ],
-                ),
-                SizedBox(height: isSmallScreen ? 20 : 40),
               ],
             ),
           ),
@@ -243,7 +220,6 @@ class _AIChatPageState extends State<AIChatPage> {
     );
   }
 
-  // Method for the input area UI
   Widget _buildInputArea(bool isDarkMode) {
     return Container(
       decoration: BoxDecoration(
@@ -259,7 +235,6 @@ class _AIChatPageState extends State<AIChatPage> {
       padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 12),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // Determine if we need to show all buttons based on width
           final bool isNarrow = constraints.maxWidth < 300;
           
           return Container(
@@ -274,7 +249,6 @@ class _AIChatPageState extends State<AIChatPage> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                // Emoji button - hide on narrow screens
                 if (!isNarrow)
                   Padding(
                     padding: const EdgeInsets.only(left: 8, bottom: 8),
@@ -292,7 +266,6 @@ class _AIChatPageState extends State<AIChatPage> {
                     ),
                   ),
                 
-                // Text input field
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.only(
@@ -330,7 +303,6 @@ class _AIChatPageState extends State<AIChatPage> {
                   ),
                 ),
 
-                // Attachment button - hide on narrow screens
                 if (!isNarrow)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
@@ -348,7 +320,6 @@ class _AIChatPageState extends State<AIChatPage> {
                     ),
                   ),
                 
-                // Send button
                 Padding(
                   padding: const EdgeInsets.only(right: 4, bottom: 4),
                   child: Material(
@@ -393,7 +364,6 @@ class _AIChatPageState extends State<AIChatPage> {
     );
   }
 
-  // Helper method to build suggestion chips
   Widget _buildSuggestionChip(String suggestion) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
@@ -489,17 +459,30 @@ class ChatMessage extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Text(
-                text,
-                style: TextStyle(
-                  color: isUser
-                      ? Colors.white
-                      : isDarkMode
-                          ? Colors.white
-                          : Colors.black87,
-                  fontSize: 15,
-                ),
-              ),
+              child: isUser 
+                ? Text( 
+                    text,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                    ),
+                  )
+                : MarkdownBody(
+                    data: text,
+                    selectable: true,
+                    styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+                      p: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: 15,
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                      code: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontFamily: 'monospace', 
+                        fontSize: 14,
+                        backgroundColor: isDarkMode ? Colors.black.withOpacity(0.2) : Colors.grey.shade200,
+                        color: isDarkMode ? Colors.lightBlueAccent : Colors.indigo
+                      ),
+                    ),
+                  ),
             ),
           ),
           if (isUser)
