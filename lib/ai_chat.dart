@@ -16,27 +16,46 @@ class _AIChatPageState extends State<AIChatPage> {
   late final GenerativeModel _model;
   late final ChatSession _chat;
 
-  final String _apiKey = "AIzaSyAS7K1V6_hxbFx5oAk8avPJ3nyKdMXLyqQ";
+  // WARNING: It's strongly recommended not to embed API keys directly in your code.
+  // Consider using environment variables or a secure configuration management system.
+  final String _apiKey = "AIzaSyAS7K1V6_hxbFx5oAk8avPJ3nyKdMXLyqQ"; // Replace with your actual key
 
   @override
   void initState() {
     super.initState();
+
+    // Configure the model for grounding with Google Search
     _model = GenerativeModel(
-      model: 'models/gemini-2.5-flash-preview-04-17',
+      // Use the gemini-2.0-flash model which supports grounding
+      model: 'gemini-2.0-flash',
       apiKey: _apiKey,
-      generationConfig: GenerationConfig(),
-       // System instructions can sometimes be added here too, depending on SDK
-       // systemInstruction: Content.text("..."), 
+      /* // TODO: Uncomment after ensuring google_generative_ai package is updated
+      // Enable the Google Search tool for grounding
+      tools: [
+        Tool(
+          googleSearchRetrieval: GoogleSearchRetrieval(
+              // You can optionally disable grounding if needed dynamically
+              // disableAttribution: false
+          ),
+        )
+      ],
+      */
+      generationConfig: GenerationConfig(
+          // Optional: Adjust temperature or other generation parameters if needed
+          // temperature: 0.7
+      ),
+      // System instructions can sometimes be added here too, depending on SDK
+      // systemInstruction: Content.text("..."),
     );
-    
+
     // Define the system prompt
     final systemPrompt = Content.model([
-      // Wrap the string in a TextPart
-      TextPart("You are Gaia, a helpful AI assistant specializing in information about Non-Governmental Organizations (NGOs) in India. Your goal is to assist users by answering their questions regarding NGOs, finding volunteering opportunities, explaining donation processes, and providing relevant details about specific organizations or causes within India. Be informative, empathetic, and focus strictly on the Indian NGO sector.")
+      TextPart(
+          "You are Gaia, a helpful AI assistant specializing in information about Non-Governmental Organizations (NGOs) in India. Your goal is to assist users by answering their questions regarding NGOs, finding volunteering opportunities, explaining donation processes, and providing relevant details about specific organizations or causes within India. Be informative, empathetic, and focus strictly on the Indian NGO sector.")
     ]);
 
     // Start chat with the system prompt as initial history
-    _chat = _model.startChat(history: [systemPrompt]); 
+    _chat = _model.startChat(history: [systemPrompt]);
   }
 
   @override
