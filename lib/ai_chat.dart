@@ -25,8 +25,18 @@ class _AIChatPageState extends State<AIChatPage> {
       model: 'models/gemini-2.5-flash-preview-04-17',
       apiKey: _apiKey,
       generationConfig: GenerationConfig(),
+       // System instructions can sometimes be added here too, depending on SDK
+       // systemInstruction: Content.text("..."), 
     );
-    _chat = _model.startChat();
+    
+    // Define the system prompt
+    final systemPrompt = Content.model([
+      // Wrap the string in a TextPart
+      TextPart("You are Gaia, a helpful AI assistant specializing in information about Non-Governmental Organizations (NGOs) in India. Your goal is to assist users by answering their questions regarding NGOs, finding volunteering opportunities, explaining donation processes, and providing relevant details about specific organizations or causes within India. Be informative, empathetic, and focus strictly on the Indian NGO sector.")
+    ]);
+
+    // Start chat with the system prompt as initial history
+    _chat = _model.startChat(history: [systemPrompt]); 
   }
 
   @override
@@ -45,7 +55,7 @@ class _AIChatPageState extends State<AIChatPage> {
           isUser: true,
         ),
       );
-      _isTyping = true;
+      _isTyping = true; // Re-enable typing indicator before API call
     });
 
     final userMessage = _messageController.text;
@@ -55,11 +65,8 @@ class _AIChatPageState extends State<AIChatPage> {
   }
 
   Future<void> _callGeminiApi(String message) async {
-    setState(() {
-      // Add an empty placeholder message for the AI response immediately
-      _messages.add(ChatMessage(text: "", isUser: false));
-      _isTyping = false; // Turn off thinking indicator, streaming starts
-    });
+    bool isFirstChunk = true; // Flag to detect the first chunk
+    String currentResponseText = ""; // Accumulate text chunks
 
     try {
       print('Starting stream for message...'); // Log stream start
@@ -67,37 +74,57 @@ class _AIChatPageState extends State<AIChatPage> {
         Content.text(message),
       );
 
-      String currentResponseText = ""; // Accumulate text chunks
       await for (final response in responseStream) {
         final textChunk = response.text;
         if (textChunk != null) {
            print('Received chunk: $textChunk'); // Log chunk
           currentResponseText += textChunk;
-          setState(() {
-            // Update the text of the last message (the placeholder we added)
-            _messages[_messages.length - 1] = ChatMessage(
-              text: currentResponseText,
-              isUser: false,
-            );
-          });
+          
+          if (isFirstChunk) {
+            // First chunk arrived: Turn off indicator and add the message
+            setState(() {
+              _isTyping = false; 
+              _messages.add(ChatMessage(
+                text: currentResponseText, 
+                isUser: false,
+              ));
+            });
+            isFirstChunk = false; // Mark first chunk as processed
+          } else {
+             // Subsequent chunks: Update the last message
+            setState(() {
+              _messages[_messages.length - 1] = ChatMessage(
+                text: currentResponseText,
+                isUser: false,
+              );
+            });
+          }
         }
       }
        print('Stream finished.'); // Log stream end
 
+       // If the stream finished but we never received a first chunk (empty response)
+       if (isFirstChunk) {
+          setState(() {
+             _isTyping = false; // Ensure indicator is off
+          });
+          _showError('API returned an empty stream response.');
+       }
+
     } catch (e) {
       print('Error during streaming: $e');
       _showError('Error getting response: $e');
-      // Optionally remove the placeholder message or update it with an error
       setState(() {
-         if (_messages.isNotEmpty && !_messages.last.isUser && _messages.last.text.isEmpty) {
-           _messages.removeLast(); // Remove empty placeholder on error
-         } else if (_messages.isNotEmpty && !_messages.last.isUser) {
+        _isTyping = false; // Ensure indicator is off on error
+         // Decide how to handle partial messages on error, if needed
+         // Current logic: if a message was started, keep it with error appended
+         // If no message started (error on first chunk), don't add anything.
+         if (!isFirstChunk && _messages.isNotEmpty && !_messages.last.isUser) {
             _messages[_messages.length - 1] = ChatMessage(
               text: "${_messages.last.text}\n\n[Error: $e]", 
               isUser: false,
             );
-         }
-        _isTyping = false; // Ensure indicator is off
+         } 
       });
     }
   }
@@ -158,6 +185,76 @@ class _AIChatPageState extends State<AIChatPage> {
                       },
                     ),
             ),
+            if (_isTyping)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isDarkMode
+                            ? const Color(0xFF262626)
+                            : Colors.grey[200],
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isDarkMode
+                              ? Colors.grey[800]!
+                              : Colors.grey[300]!,
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 20,
+                            margin: const EdgeInsets.only(right: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                for (int i = 0; i < 3; i++)
+                                  Container(
+                                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                                    height: 8,
+                                    width: 8,
+                                    decoration: BoxDecoration(
+                                      color: Colors.teal[400],
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: TweenAnimationBuilder<double>(
+                                      tween: Tween(begin: 0.0, end: 1.0),
+                                      duration: Duration(milliseconds: 800 + (i * 200)),
+                                      builder: (context, value, child) {
+                                        return Transform.scale(
+                                          scale: 0.6 + (0.4 * (value > 0.5 ? 1 - value : value) * 2),
+                                          child: child,
+                                        );
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.teal[400],
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            "AI is thinking",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isDarkMode ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             _buildInputArea(isDarkMode),
           ],
         ),
