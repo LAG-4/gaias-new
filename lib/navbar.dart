@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gaia/ai_chat.dart';
 import 'package:gaia/community.dart';
 import 'package:gaia/custom_drawer.dart';
 import 'package:gaia/requests.dart';
@@ -103,6 +104,7 @@ class _DamnTimeState extends State<DamnTime> with TickerProviderStateMixin {
     return Scaffold(
       key: _scaffoldKey,
       extendBody: true,
+      extendBodyBehindAppBar: true,
       drawer: const CustomDrawer(),
       appBar: AppBar(
         backgroundColor: Theme.of(context).brightness == Brightness.dark
@@ -184,31 +186,88 @@ class _DamnTimeState extends State<DamnTime> with TickerProviderStateMixin {
           CommunityPage(),
         ],
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: navbarBackgroundColor,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.teal.withOpacity(0.15),
-              blurRadius: 12,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      floatingActionButton: Transform.translate(
+        offset: const Offset(0, 5),
+        child: SizedBox(
+          width: 60,
+          height: 60,
+          child: FloatingActionButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AIChatPage(),
+                ),
+              );
+            },
+            backgroundColor: Colors.transparent,
+            elevation: 8,
+            highlightElevation: 12,
+            shape: const CircleBorder(),
             child: Container(
-              height: 56,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.teal[300]!,
+                    Colors.teal[500]!,
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.teal[400]!.withOpacity(0.3),
+                    blurRadius: 8,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.smart_toy_rounded,
+                color: Colors.white,
+                size: 26,
+              ),
+            ),
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        elevation: 0,
+        padding: EdgeInsets.zero,
+        height: 65,
+        color: Colors.transparent,
+        notchMargin: 8,
+        shape: const CircularNotchedRectangle(),
+        child: Container(
+          decoration: BoxDecoration(
+            color: navbarBackgroundColor,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.teal.withOpacity(0.15),
+                blurRadius: 12,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Container(
+              height: 48,
               decoration: BoxDecoration(
                 color: navbarItemBackgroundColor,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(4, (index) {
-                  return _buildNavItem(index);
-                }),
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(0),
+                  _buildNavItem(1),
+                  const SizedBox(width: 64),
+                  _buildNavItem(2),
+                  _buildNavItem(3),
+                ],
               ),
             ),
           ),
