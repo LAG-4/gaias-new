@@ -171,7 +171,7 @@ class _AIChatPageState extends State<AIChatPage> {
         ),
         centerTitle: true,
         title: Text(
-          "AI ASSISTANT",
+          "TALK TO GAIA",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Theme.of(context).brightness == Brightness.dark
@@ -365,29 +365,13 @@ class _AIChatPageState extends State<AIChatPage> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                if (!isNarrow)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8, bottom: 8),
-                    child: IconButton(
-                      constraints: const BoxConstraints(),
-                      padding: const EdgeInsets.all(8),
-                      icon: Icon(
-                        Icons.emoji_emotions_outlined,
-                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                        size: 22,
-                      ),
-                      onPressed: () {
-                        // Emoji picker functionality would go here
-                      },
-                    ),
-                  ),
-                
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.only(
-                      left: isNarrow ? 12 : 4,
+                      left: 12,
                       bottom: 8,
                       top: 4,
+                      right: 4,
                     ),
                     child: TextField(
                       controller: _messageController,
@@ -418,23 +402,6 @@ class _AIChatPageState extends State<AIChatPage> {
                     ),
                   ),
                 ),
-
-                if (!isNarrow)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: IconButton(
-                      constraints: const BoxConstraints(),
-                      padding: const EdgeInsets.all(8),
-                      icon: Icon(
-                        Icons.attach_file_rounded,
-                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                        size: 22,
-                      ),
-                      onPressed: () {
-                        // Attachment functionality would go here
-                      },
-                    ),
-                  ),
                 
                 Padding(
                   padding: const EdgeInsets.only(right: 4, bottom: 4),
