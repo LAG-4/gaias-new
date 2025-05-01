@@ -18,7 +18,8 @@ class _AIChatPageState extends State<AIChatPage> {
 
   // WARNING: It's strongly recommended not to embed API keys directly in your code.
   // Consider using environment variables or a secure configuration management system.
-  final String _apiKey = "AIzaSyAS7K1V6_hxbFx5oAk8avPJ3nyKdMXLyqQ"; // Replace with your actual key
+  final String _apiKey =
+      "AIzaSyAS7K1V6_hxbFx5oAk8avPJ3nyKdMXLyqQ"; // Replace with your actual key
 
   @override
   void initState() {
@@ -43,7 +44,7 @@ class _AIChatPageState extends State<AIChatPage> {
       generationConfig: GenerationConfig(
           // Optional: Adjust temperature or other generation parameters if needed
           // temperature: 0.7
-      ),
+          ),
       // System instructions can sometimes be added here too, depending on SDK
       // systemInstruction: Content.text("..."),
     );
@@ -89,28 +90,29 @@ class _AIChatPageState extends State<AIChatPage> {
 
     try {
       print('Starting stream for message...'); // Log stream start
-      final Stream<GenerateContentResponse> responseStream = _chat.sendMessageStream(
+      final Stream<GenerateContentResponse> responseStream =
+          _chat.sendMessageStream(
         Content.text(message),
       );
 
       await for (final response in responseStream) {
         final textChunk = response.text;
         if (textChunk != null) {
-           print('Received chunk: $textChunk'); // Log chunk
+          print('Received chunk: $textChunk'); // Log chunk
           currentResponseText += textChunk;
-          
+
           if (isFirstChunk) {
             // First chunk arrived: Turn off indicator and add the message
             setState(() {
-              _isTyping = false; 
+              _isTyping = false;
               _messages.add(ChatMessage(
-                text: currentResponseText, 
+                text: currentResponseText,
                 isUser: false,
               ));
             });
             isFirstChunk = false; // Mark first chunk as processed
           } else {
-             // Subsequent chunks: Update the last message
+            // Subsequent chunks: Update the last message
             setState(() {
               _messages[_messages.length - 1] = ChatMessage(
                 text: currentResponseText,
@@ -120,30 +122,29 @@ class _AIChatPageState extends State<AIChatPage> {
           }
         }
       }
-       print('Stream finished.'); // Log stream end
+      print('Stream finished.'); // Log stream end
 
-       // If the stream finished but we never received a first chunk (empty response)
-       if (isFirstChunk) {
-          setState(() {
-             _isTyping = false; // Ensure indicator is off
-          });
-          _showError('API returned an empty stream response.');
-       }
-
+      // If the stream finished but we never received a first chunk (empty response)
+      if (isFirstChunk) {
+        setState(() {
+          _isTyping = false; // Ensure indicator is off
+        });
+        _showError('API returned an empty stream response.');
+      }
     } catch (e) {
       print('Error during streaming: $e');
       _showError('Error getting response: $e');
       setState(() {
         _isTyping = false; // Ensure indicator is off on error
-         // Decide how to handle partial messages on error, if needed
-         // Current logic: if a message was started, keep it with error appended
-         // If no message started (error on first chunk), don't add anything.
-         if (!isFirstChunk && _messages.isNotEmpty && !_messages.last.isUser) {
-            _messages[_messages.length - 1] = ChatMessage(
-              text: "${_messages.last.text}\n\n[Error: $e]", 
-              isUser: false,
-            );
-         } 
+        // Decide how to handle partial messages on error, if needed
+        // Current logic: if a message was started, keep it with error appended
+        // If no message started (error on first chunk), don't add anything.
+        if (!isFirstChunk && _messages.isNotEmpty && !_messages.last.isUser) {
+          _messages[_messages.length - 1] = ChatMessage(
+            text: "${_messages.last.text}\n\n[Error: $e]",
+            isUser: false,
+          );
+        }
       });
     }
   }
@@ -159,7 +160,7 @@ class _AIChatPageState extends State<AIChatPage> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).brightness == Brightness.dark
@@ -206,11 +207,13 @@ class _AIChatPageState extends State<AIChatPage> {
             ),
             if (_isTyping)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
                         color: isDarkMode
                             ? const Color(0xFF262626)
@@ -234,7 +237,8 @@ class _AIChatPageState extends State<AIChatPage> {
                               children: [
                                 for (int i = 0; i < 3; i++)
                                   Container(
-                                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                                    margin: const EdgeInsets.symmetric(
+                                        horizontal: 2),
                                     height: 8,
                                     width: 8,
                                     decoration: BoxDecoration(
@@ -243,10 +247,16 @@ class _AIChatPageState extends State<AIChatPage> {
                                     ),
                                     child: TweenAnimationBuilder<double>(
                                       tween: Tween(begin: 0.0, end: 1.0),
-                                      duration: Duration(milliseconds: 800 + (i * 200)),
+                                      duration: Duration(
+                                          milliseconds: 800 + (i * 200)),
                                       builder: (context, value, child) {
                                         return Transform.scale(
-                                          scale: 0.6 + (0.4 * (value > 0.5 ? 1 - value : value) * 2),
+                                          scale: 0.6 +
+                                              (0.4 *
+                                                  (value > 0.5
+                                                      ? 1 - value
+                                                      : value) *
+                                                  2),
                                           child: child,
                                         );
                                       },
@@ -282,58 +292,56 @@ class _AIChatPageState extends State<AIChatPage> {
   }
 
   Widget _buildEmptyState(bool isDarkMode) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final bool isSmallScreen = constraints.maxHeight < 500;
-        
-        return SingleChildScrollView(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            constraints: BoxConstraints(
-              minHeight: constraints.maxHeight,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(height: isSmallScreen ? 20 : 40),
-                Container(
-                  padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
-                  decoration: BoxDecoration(
-                    color: Colors.teal.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.smart_toy_rounded,
-                    size: isSmallScreen ? 48 : 64,
-                    color: Colors.teal[400],
-                  ),
-                ),
-                SizedBox(height: isSmallScreen ? 16 : 24),
-                Text(
-                  "How can I assist you today?",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: isSmallScreen ? 20 : 22,
-                    fontWeight: FontWeight.bold,
-                    color: isDarkMode ? Colors.white : Colors.black87,
-                  ),
-                ),
-                SizedBox(height: isSmallScreen ? 8 : 12),
-                Text(
-                  "Ask me anything - from answering questions to generating content or providing recommendations.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: isSmallScreen ? 14 : 16,
-                    color: isDarkMode ? Colors.white70 : Colors.black54,
-                  ),
-                ),
-                SizedBox(height: isSmallScreen ? 24 : 32),
-              ],
-            ),
+    return LayoutBuilder(builder: (context, constraints) {
+      final bool isSmallScreen = constraints.maxHeight < 500;
+
+      return SingleChildScrollView(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          constraints: BoxConstraints(
+            minHeight: constraints.maxHeight,
           ),
-        );
-      }
-    );
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(height: isSmallScreen ? 20 : 40),
+              Container(
+                padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
+                decoration: BoxDecoration(
+                  color: Colors.teal.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.smart_toy_rounded,
+                  size: isSmallScreen ? 48 : 64,
+                  color: Colors.teal[400],
+                ),
+              ),
+              SizedBox(height: isSmallScreen ? 16 : 24),
+              Text(
+                "How can I assist you today?",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: isSmallScreen ? 20 : 22,
+                  fontWeight: FontWeight.bold,
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                ),
+              ),
+              SizedBox(height: isSmallScreen ? 8 : 12),
+              Text(
+                "Ask me anything - from answering questions to generating content or providing recommendations.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: isSmallScreen ? 14 : 16,
+                  color: isDarkMode ? Colors.white70 : Colors.black54,
+                ),
+              ),
+              SizedBox(height: isSmallScreen ? 24 : 32),
+            ],
+          ),
+        ),
+      );
+    });
   }
 
   Widget _buildInputArea(bool isDarkMode) {
@@ -349,107 +357,104 @@ class _AIChatPageState extends State<AIChatPage> {
         ],
       ),
       padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 12),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final bool isNarrow = constraints.maxWidth < 300;
-          
-          return Container(
-            decoration: BoxDecoration(
-              color: isDarkMode ? const Color(0xFF262626) : Colors.grey[100],
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
-                width: 1,
-              ),
+      child: LayoutBuilder(builder: (context, constraints) {
+        final bool isNarrow = constraints.maxWidth < 300;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: isDarkMode ? const Color(0xFF262626) : Colors.grey[100],
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
+              width: 1,
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: 12,
-                      bottom: 8,
-                      top: 4,
-                      right: 4,
-                    ),
-                    child: TextField(
-                      controller: _messageController,
-                      decoration: InputDecoration(
-                        hintText: "Type a message...",
-                        hintStyle: TextStyle(
-                          color: isDarkMode ? Colors.grey[500] : Colors.grey[400],
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 10,
-                        ),
-                        border: InputBorder.none,
-                        isDense: true,
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: 12,
+                    bottom: 8,
+                    top: 4,
+                    right: 4,
+                  ),
+                  child: TextField(
+                    controller: _messageController,
+                    decoration: InputDecoration(
+                      hintText: "Type a message...",
+                      hintStyle: TextStyle(
+                        color: isDarkMode ? Colors.grey[500] : Colors.grey[400],
                       ),
-                      style: TextStyle(
-                        color: isDarkMode ? Colors.white : Colors.black87,
-                        fontSize: 16,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 10,
                       ),
-                      minLines: 1,
-                      maxLines: 5,
-                      textCapitalization: TextCapitalization.sentences,
-                      keyboardType: TextInputType.multiline,
-                      textInputAction: TextInputAction.newline,
-                      cursorColor: Colors.teal[400],
-                      cursorWidth: 2,
-                      cursorRadius: const Radius.circular(2),
+                      border: InputBorder.none,
+                      isDense: true,
                     ),
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.black87,
+                      fontSize: 16,
+                    ),
+                    minLines: 1,
+                    maxLines: 5,
+                    textCapitalization: TextCapitalization.sentences,
+                    keyboardType: TextInputType.multiline,
+                    textInputAction: TextInputAction.newline,
+                    cursorColor: Colors.teal[400],
+                    cursorWidth: 2,
+                    cursorRadius: const Radius.circular(2),
                   ),
                 ),
-                
-                Padding(
-                  padding: const EdgeInsets.only(right: 4, bottom: 4),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: _sendMessage,
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Colors.teal[300]!,
-                              Colors.teal[500]!,
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.teal.withOpacity(0.3),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 4, bottom: 4),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _sendMessage,
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.teal[300]!,
+                            Colors.teal[500]!,
                           ],
                         ),
-                        child: const Icon(
-                          Icons.send_rounded,
-                          color: Colors.white,
-                          size: 20,
-                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.teal.withOpacity(0.3),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.send_rounded,
+                        color: Colors.white,
+                        size: 20,
                       ),
                     ),
                   ),
                 ),
-              ],
-            ),
-          );
-        }
-      ),
+              ),
+            ],
+          ),
+        );
+      }),
     );
   }
 
   Widget _buildSuggestionChip(String suggestion) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
+
     return InkWell(
       onTap: () {
         _messageController.text = suggestion;
@@ -490,11 +495,12 @@ class ChatMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
-        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment:
+            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isUser)
@@ -542,30 +548,35 @@ class ChatMessage extends StatelessWidget {
                   ),
                 ],
               ),
-              child: isUser 
-                ? Text( 
-                    text,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                    ),
-                  )
-                : MarkdownBody(
-                    data: text,
-                    selectable: true,
-                    styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-                      p: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              child: isUser
+                  ? Text(
+                      text,
+                      style: TextStyle(
+                        color: Colors.white,
                         fontSize: 15,
-                        color: isDarkMode ? Colors.white : Colors.black87,
                       ),
-                      code: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontFamily: 'monospace', 
-                        fontSize: 14,
-                        backgroundColor: isDarkMode ? Colors.black.withOpacity(0.2) : Colors.grey.shade200,
-                        color: isDarkMode ? Colors.lightBlueAccent : Colors.indigo
+                    )
+                  : MarkdownBody(
+                      data: text,
+                      selectable: true,
+                      styleSheet:
+                          MarkdownStyleSheet.fromTheme(Theme.of(context))
+                              .copyWith(
+                        p: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontSize: 15,
+                              color: isDarkMode ? Colors.white : Colors.black87,
+                            ),
+                        code: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontFamily: 'monospace',
+                            fontSize: 14,
+                            backgroundColor: isDarkMode
+                                ? Colors.black.withOpacity(0.2)
+                                : Colors.grey.shade200,
+                            color: isDarkMode
+                                ? Colors.lightBlueAccent
+                                : Colors.indigo),
                       ),
                     ),
-                  ),
             ),
           ),
           if (isUser)
@@ -594,4 +605,4 @@ class ChatMessage extends StatelessWidget {
       ),
     );
   }
-} 
+}
