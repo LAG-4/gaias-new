@@ -43,7 +43,13 @@ dependencies:
   url_launcher: ^6.3.1
   provider: ^6.1.1
   fl_chart: ^0.55.2
+<<<<<<< HEAD
   http: ^0.13.5
+=======
+  google_generative_ai: ^0.4.0
+  flutter_markdown: ^0.7.1
+
+>>>>>>> 2bffe0b9eed3fe00221029ee786bf55f8291ab03
 dev_dependencies:
   flutter_test:
     sdk: flutter
