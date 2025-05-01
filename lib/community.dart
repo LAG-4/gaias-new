@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gaia/base_page.dart';
+import 'package:gaia/news_api.dart';
+import 'package:gaia/news_api_service.dart';
 import 'package:provider/provider.dart';
 import 'package:gaia/theme_provider.dart';
 
@@ -39,6 +41,9 @@ class CommunityPage extends StatefulWidget {
 class _CommunityPageState extends State<CommunityPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+    NewsApi? _newsData;//mapping
+    bool _isLoading = true;
+
   String _selectedFilter = 'All';
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
@@ -108,6 +113,14 @@ class _CommunityPageState extends State<CommunityPage>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _searchController.addListener(_onSearchChanged);
+     fetchNewsData();
+  }
+    void fetchNewsData() async {
+    final data = await NewsApiService().fetchNews();
+    setState(() {
+      _newsData = data;
+      _isLoading = false;
+    });
   }
 
   @override

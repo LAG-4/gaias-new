@@ -1,0 +1,2 @@
+C:/gaias-new/android/app/.cxx/Debug/1fk4n5l7/x86/CMakeFiles/edit_cache.dir
+C:/gaias-new/android/app/.cxx/Debug/1fk4n5l7/x86/CMakeFiles/rebuild_cache.dir
