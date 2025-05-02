@@ -3,6 +3,8 @@ import 'package:gaia/homepage.dart';
 import 'package:gaia/theme_provider.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 import 'navbar.dart';
 
@@ -20,6 +22,11 @@ class _LoginPageState extends State<LoginPage>
   late Animation<double> _pulseAnimation;
   late Animation<double> _scaleAnimation;
   bool _isExpanded = false;
+
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+  bool _isPasswordVisible = false;
 
   @override
   void initState() {
@@ -50,18 +57,81 @@ class _LoginPageState extends State<LoginPage>
       ),
     );
 
-    // Start animation after a short delay
     Timer(const Duration(milliseconds: 300), () {
-      setState(() {
-        _isExpanded = true;
-      });
+      if (mounted) {
+        setState(() {
+          _isExpanded = true;
+        });
+      }
     });
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loginUser() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter email and password')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final url = Uri.parse('https://ngo-app-3mvh.onrender.com/api/auth/login');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': _emailController.text,
+          'password': _passwordController.text,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final responseBody = jsonDecode(response.body);
+        final token = responseBody['token'];
+
+        print('Login successful! Token: $token');
+
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const DamnTime()),
+          );
+        }
+      } else {
+        final errorBody = jsonDecode(response.body);
+        final errorMessage = errorBody['message'] ?? 'Login failed. Please check your credentials.';
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMessage)),
+          );
+        }
+        print('Login failed: ${response.statusCode} ${response.body}');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('An error occurred. Please try again.')),
+        );
+      }
+      print('Error during login: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -231,6 +301,60 @@ class _LoginPageState extends State<LoginPage>
                 duration: const Duration(milliseconds: 1200),
                 curve: Curves.easeOutQuart,
                 opacity: _isExpanded ? 1.0 : 0.0,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 8),
+                  child: TextField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: const Icon(Icons.email_outlined),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Theme.of(context).inputDecorationTheme.fillColor?.withOpacity(0.8),
+                    ),
+                  ),
+                ),
+              ),
+              AnimatedOpacity(
+                duration: const Duration(milliseconds: 1200),
+                curve: Curves.easeOutQuart,
+                opacity: _isExpanded ? 1.0 : 0.0,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 8),
+                  child: TextField(
+                    controller: _passwordController,
+                    obscureText: !_isPasswordVisible,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                          color: Theme.of(context).iconTheme.color?.withOpacity(0.6),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Theme.of(context).inputDecorationTheme.fillColor?.withOpacity(0.8),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              AnimatedOpacity(
+                duration: const Duration(milliseconds: 1200),
+                curve: Curves.easeOutQuart,
+                opacity: _isExpanded ? 1.0 : 0.0,
                 child: AnimatedPadding(
                   duration: const Duration(milliseconds: 1200),
                   curve: Curves.easeOutQuart,
@@ -247,19 +371,20 @@ class _LoginPageState extends State<LoginPage>
                       return Transform.scale(
                         scale: scale,
                         child: Container(
+                          width: double.infinity,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
                             gradient: LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                               colors: [
-                                Colors.teal[300]!,
                                 Colors.teal[400]!,
+                                Colors.teal[600]!,
                               ],
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.teal.withOpacity(0.3),
+                                color: Colors.teal.withOpacity(0.4),
                                 spreadRadius: 1,
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
@@ -272,47 +397,28 @@ class _LoginPageState extends State<LoginPage>
                               borderRadius: BorderRadius.circular(12),
                               splashColor: Colors.white.withOpacity(0.2),
                               highlightColor: Colors.transparent,
-                              onTap: () {
-                                // Add a ripple effect animation before navigating
-                                Navigator.of(context).push(
-                                  PageRouteBuilder(
-                                    pageBuilder: (context, animation,
-                                            secondaryAnimation) =>
-                                        DamnTime(),
-                                    transitionsBuilder: (context, animation,
-                                        secondaryAnimation, child) {
-                                      return FadeTransition(
-                                        opacity: animation,
-                                        child: child,
-                                      );
-                                    },
-                                    transitionDuration:
-                                        const Duration(milliseconds: 600),
-                                  ),
-                                );
-                              },
+                              onTap: _isLoading ? null : _loginUser,
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    vertical: 12.0, horizontal: 8.0),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(
-                                      Icons.g_mobiledata_rounded,
-                                      size: 30,
-                                      color: Colors.black,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const Text(
-                                      'Sign in With Google',
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                  ],
+                                    vertical: 14.0, horizontal: 8.0),
+                                child: Center(
+                                  child: _isLoading
+                                      ? const SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2.0,
+                                          ),
+                                        )
+                                      : const Text(
+                                          'Login',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18,
+                                          ),
+                                        ),
                                 ),
                               ),
                             ),
