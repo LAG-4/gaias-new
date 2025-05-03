@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:gaia/login.dart';
 import 'package:gaia/mycontributions.dart';
 import 'package:gaia/myrewards.dart';
 import 'package:gaia/theme_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Custom clipper for full-height drawer
 class _DrawerClipper extends CustomClipper<Path> {
@@ -203,6 +205,21 @@ class _CustomDrawerState extends State<CustomDrawer>
                     ),
                     onTap: () {
                       themeProvider.toggleTheme();
+                    },
+                  ),
+                  _buildAnimatedListTile(
+                    icon: Icons.logout,
+                    title: 'Logout',
+                    delay: 0.6,
+                    onTap: () async {
+                      print('Logout tapped');
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.remove('auth_token');
+
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (context) => const LoginPage()),
+                        (Route<dynamic> route) => false,
+                      );
                     },
                   ),
                 ],

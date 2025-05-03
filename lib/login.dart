@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:gaia/homepage.dart';
 import 'package:gaia/theme_provider.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'navbar.dart';
 
@@ -102,6 +102,9 @@ class _LoginPageState extends State<LoginPage>
         final token = responseBody['token'];
 
         print('Login successful! Token: $token');
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('auth_token', token);
 
         if (mounted) {
           Navigator.of(context).pushReplacement(
