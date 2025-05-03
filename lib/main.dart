@@ -5,6 +5,7 @@ import 'package:gaia/login.dart';
 import 'package:gaia/requests.dart';
 import 'package:gaia/theme_provider.dart';
 import 'package:gaia/navbar.dart';
+import 'package:gaia/welcome_page.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -15,7 +16,7 @@ void main() async {
   final String? token = prefs.getString('auth_token');
 
   final Widget initialWidget = token == null || token.isEmpty
-      ? const LoginPage()
+      ? const WelcomePage()
       : const DamnTime();
 
   runApp(

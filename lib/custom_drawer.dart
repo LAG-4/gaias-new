@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:gaia/login.dart';
 import 'package:gaia/mycontributions.dart';
 import 'package:gaia/myrewards.dart';
 import 'package:gaia/theme_provider.dart';
+import 'package:gaia/welcome_page.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -217,7 +217,7 @@ class _CustomDrawerState extends State<CustomDrawer>
                       await prefs.remove('auth_token');
 
                       Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (context) => const LoginPage()),
+                        MaterialPageRoute(builder: (context) => const WelcomePage()),
                         (Route<dynamic> route) => false,
                       );
                     },
