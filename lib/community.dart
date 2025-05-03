@@ -1,32 +1,53 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:gaia/base_page.dart';
 import 'package:provider/provider.dart';
 import 'package:gaia/theme_provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class CommunityPost {
-  final String id;
+  final int id;
   final String username;
-  final String userImage;
   final String content;
   final String? image;
   final String category;
-  final int likes;
-  final DateTime timestamp;
-  final List<String> tags;
+  final String tags;
   final int impact;
 
   CommunityPost({
     required this.id,
     required this.username,
-    required this.userImage,
     required this.content,
     this.image,
     required this.category,
-    required this.likes,
-    required this.timestamp,
     required this.tags,
     required this.impact,
   });
+
+  factory CommunityPost.fromJson(Map<String, dynamic> json) {
+    int parsedImpact = 0;
+    if (json['peopleNo'] != null) {
+      parsedImpact = int.tryParse(json['peopleNo'].toString()) ?? 0;
+    }
+    return CommunityPost(
+      id: json['id'] ?? 0,
+      username: json['username'] ?? 'Unknown User',
+      content: json['content'] ?? '',
+      image: json['image'] as String?,
+      category: json['category'] ?? 'General',
+      tags: json['tags'] ?? '',
+      impact: parsedImpact,
+    );
+  }
+
+  List<String> get tagList {
+    if (tags.isEmpty) return [];
+    return tags.split(',').map((tag) => tag.trim()).toList();
+  }
 }
 
 class CommunityPage extends StatefulWidget {
@@ -44,70 +65,32 @@ class _CommunityPageState extends State<CommunityPage>
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
 
-  // Set to track liked posts by their ID
-  final Set<String> _likedPosts = {};
+  // Controllers for the post creation dialog
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _contentController = TextEditingController();
+  final TextEditingController _tagsController = TextEditingController();
+  final TextEditingController _peopleNoController = TextEditingController(text: '0');
 
-  // Mock data - to be replaced with Firebase data
-  final List<CommunityPost> _posts = [
-    CommunityPost(
-      id: '1',
-      username: 'Shwet Siwach',
-      userImage: 'assets/u1.jpg',
-      content:
-          'Just volunteered at a food drive organized by Feed The Future NGO. We managed to provide meals to over 200 underprivileged children today!',
-      image: 'assets/n1.jpg',
-      category: 'Volunteer',
-      likes: 124,
-      timestamp: DateTime.now().subtract(Duration(hours: 2)),
-      tags: ['FoodDrive', 'Volunteer', 'Community'],
-      impact: 200,
-    ),
-    CommunityPost(
-      id: '2',
-      username: 'Anurag Yadav',
-      userImage: 'assets/u2.jpg',
-      content:
-          'Donated winter clothes to Warm Hearts foundation. They\'ll be distributed to homeless people as winter approaches. It feels great to help others stay warm!',
-      image: 'assets/n2.jpg',
-      category: 'Donation',
-      likes: 89,
-      timestamp: DateTime.now().subtract(Duration(hours: 5)),
-      tags: ['WinterClothes', 'Donation', 'Homeless'],
-      impact: 50,
-    ),
-    CommunityPost(
-      id: '3',
-      username: 'NGO United',
-      userImage: 'assets/u3.jpg',
-      content:
-          '17 measures undertaken by NGOs and communities in India contributing to Sustainable Development Goals. Together we can make a difference!',
-      image: 'assets/b.jpg',
-      category: 'News',
-      likes: 215,
-      timestamp: DateTime.now().subtract(Duration(days: 1)),
-      tags: ['SDGs', 'NGOs', 'SustainableDevelopment'],
-      impact: 1000,
-    ),
-    CommunityPost(
-      id: '4',
-      username: 'Green Earth Initiative',
-      userImage: 'assets/u4.jpg',
-      content:
-          'Today we planted 100 trees in Urban Park with the help of 30 volunteers. Small steps toward a greener future!',
-      image: 'assets/c.jpg',
-      category: 'Environment',
-      likes: 178,
-      timestamp: DateTime.now().subtract(Duration(days: 2)),
-      tags: ['TreePlantation', 'Environment', 'GreenFuture'],
-      impact: 100,
-    ),
-  ];
+  // State for dialog
+  String? _selectedCategory;
+  String? _pickedImageBase64;
+
+  // State variable for upload loading
+  bool _isUploading = false;
+
+  final Set<int> _likedPosts = {};
+
+  List<CommunityPost> _posts = [];
+  bool _isLoading = true;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _searchController.addListener(_onSearchChanged);
+    _loadPosts();
   }
 
   @override
@@ -115,6 +98,12 @@ class _CommunityPageState extends State<CommunityPage>
     _tabController.dispose();
     _searchController.dispose();
     _searchFocusNode.dispose();
+    // Dispose dialog controllers
+    _titleController.dispose();
+    _usernameController.dispose();
+    _contentController.dispose();
+    _tagsController.dispose();
+    _peopleNoController.dispose();
     super.dispose();
   }
 
@@ -132,117 +121,335 @@ class _CommunityPageState extends State<CommunityPage>
 
   void _showCreatePostDialog() {
     final theme = Theme.of(context);
+    // Clear controllers and reset state when opening dialog
+    _titleController.clear();
+    _usernameController.clear();
+    _contentController.clear();
+    _tagsController.clear();
+    _peopleNoController.text = '0';
+    setState(() {
+      _selectedCategory = null;
+      _pickedImageBase64 = null;
+    });
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: theme.cardColor,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  height: 5,
-                  width: 40,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurface.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
+      builder: (context) {
+        // Use StatefulBuilder to update dialog state internally
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setDialogState) {
+            return Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
-              SizedBox(height: 20),
-              Text(
-                'Share Your Contribution',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
                 ),
-              ),
-              SizedBox(height: 20),
-              TextField(
-                maxLines: 5,
-                decoration: InputDecoration(
-                  hintText: 'What positive impact did you make today?',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: theme.colorScheme.onSurface.withOpacity(0.2),
-                    ),
-                  ),
-                  filled: true,
-                  fillColor: theme.colorScheme.surface,
-                ),
-              ),
-              SizedBox(height: 16),
-              Row(
-                children: [
-                  OutlinedButton.icon(
-                    onPressed: () {},
-                    icon: Icon(Icons.photo_library_outlined),
-                    label: Text('Add Photo'),
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          height: 5,
+                          width: 40,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.onSurface.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  OutlinedButton.icon(
-                    onPressed: () {},
-                    icon: Icon(Icons.tag),
-                    label: Text('Add Tags'),
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                      SizedBox(height: 20),
+                      Text(
+                        'Share Your Contribution',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                       ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Post shared with the community!'),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.colorScheme.primary,
-                  foregroundColor: theme.colorScheme.onPrimary,
-                  minimumSize: Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                      SizedBox(height: 20),
+                      TextField(
+                        controller: _titleController,
+                        decoration: InputDecoration(
+                          hintText: 'Post Title',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: theme.colorScheme.onSurface.withOpacity(0.2),
+                            ),
+                          ),
+                          filled: true,
+                          fillColor: theme.colorScheme.surface,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      TextField(
+                        controller: _usernameController,
+                        decoration: InputDecoration(
+                          hintText: 'Your Name',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: theme.colorScheme.onSurface.withOpacity(0.2),
+                            ),
+                          ),
+                          filled: true,
+                          fillColor: theme.colorScheme.surface,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      TextField(
+                        controller: _contentController,
+                        maxLines: 4,
+                        decoration: InputDecoration(
+                          hintText: 'What positive impact did you make today?',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: theme.colorScheme.onSurface.withOpacity(0.2),
+                            ),
+                          ),
+                          filled: true,
+                          fillColor: theme.colorScheme.surface,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _tagsController,
+                              decoration: InputDecoration(
+                                hintText: 'Tags (comma-separated)',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: theme.colorScheme.onSurface.withOpacity(0.2),
+                                  ),
+                                ),
+                                filled: true,
+                                fillColor: theme.colorScheme.surface,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              value: _selectedCategory,
+                              hint: Text('Category'),
+                              items: ['Volunteer', 'Donation', 'Environment', 'News']
+                                  .map((category) => DropdownMenuItem(
+                                        value: category,
+                                        child: Text(category),
+                                      ))
+                                  .toList(),
+                              onChanged: (value) {
+                                // Use setDialogState for internal dialog updates
+                                setDialogState(() {
+                                  _selectedCategory = value;
+                                });
+                              },
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: theme.colorScheme.onSurface.withOpacity(0.2),
+                                  ),
+                                ),
+                                filled: true,
+                                fillColor: theme.colorScheme.surface,
+                                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                              ),
+                              validator: (value) => value == null ? 'Select category' : null,
+                              autovalidateMode: AutovalidateMode.onUserInteraction,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 16),
+                      Row(
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              _showImageSourceDialog(context, setDialogState);
+                            },
+                            icon: Icon(
+                              _pickedImageBase64 == null
+                                  ? Icons.photo_library_outlined
+                                  : Icons.check_circle_outline,
+                              color: _pickedImageBase64 == null
+                                  ? null
+                                  : Colors.green,
+                            ),
+                            label: Text('Add Photo'),
+                            style: OutlinedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text('Impact: ', style: TextStyle(fontSize: 16)),
+                          IconButton(
+                            icon: Icon(Icons.remove_circle_outline),
+                            onPressed: () {
+                              int currentValue = int.tryParse(_peopleNoController.text) ?? 0;
+                              if (currentValue > 0) {
+                                _peopleNoController.text = (currentValue - 1).toString();
+                              }
+                            },
+                          ),
+                          SizedBox(
+                            width: 40,
+                            child: TextField(
+                              controller: _peopleNoController,
+                              keyboardType: TextInputType.number,
+                              textAlign: TextAlign.center,
+                              decoration: InputDecoration(
+                                border: _inputBorder(theme),
+                                filled: true,
+                                fillColor: theme.colorScheme.surface,
+                                contentPadding: EdgeInsets.symmetric(vertical: 8)
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.add_circle_outline),
+                            onPressed: () {
+                              int currentValue = int.tryParse(_peopleNoController.text) ?? 0;
+                              // Use setDialogState for internal dialog updates
+                              setDialogState(() {
+                                _peopleNoController.text = (currentValue + 1).toString();
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: _isUploading ? null : () => _submitPost(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.colorScheme.primary,
+                          foregroundColor: theme.colorScheme.onPrimary,
+                          minimumSize: Size(double.infinity, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: _isUploading
+                            ? SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  color: theme.colorScheme.onPrimary,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                'Share with Community',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                      ),
+                      SizedBox(height: 16),
+                      // Add Image Preview
+                      if (_pickedImageBase64 != null)
+                         Padding(
+                           padding: const EdgeInsets.only(top: 16.0),
+                           child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("Image Preview:", style: TextStyle(fontWeight: FontWeight.bold)),
+                                SizedBox(height: 8),
+                                Center(
+                                  child: Image.memory(
+                                    base64Decode(_pickedImageBase64!),
+                                    height: 100,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Text("Preview Error", style: TextStyle(color: Colors.red));
+                                    },
+                                  ),
+                                ),
+                              ],
+                           ),
+                         ),
+                    ],
                   ),
                 ),
-                child: Text(
-                  'Share with Community',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
               ),
-              SizedBox(height: 16),
-            ],
-          ),
+            );
+          }
+        );
+      },
+    );
+  }
+
+  // Show dialog to choose Camera or Gallery
+  void _showImageSourceDialog(BuildContext context, StateSetter setDialogState) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text("Select Image Source"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.photo_library),
+              title: Text('Gallery'),
+              onTap: () {
+                Navigator.of(dialogContext).pop(); // Close the dialog
+                _pickImage(ImageSource.gallery, setDialogState);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.camera_alt),
+              title: Text('Camera'),
+              onTap: () {
+                 Navigator.of(dialogContext).pop(); // Close the dialog
+                _pickImage(ImageSource.camera, setDialogState);
+              },
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  // Function to pick image and convert to base64
+  Future<void> _pickImage(ImageSource source, StateSetter setDialogState) async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? pickedFile = await picker.pickImage(source: source);
+
+      if (pickedFile != null) {
+        final Uint8List imageBytes = await pickedFile.readAsBytes();
+        final String base64String = base64Encode(imageBytes);
+
+        // Use setDialogState to update the dialog UI
+        setDialogState(() {
+          _pickedImageBase64 = base64String;
+        });
+      } else {
+        // User canceled the picker
+        print('No image selected.');
+      }
+    } catch (e) {
+      print("Error picking image: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error picking image: $e'), backgroundColor: Colors.red),
+      );
+    }
   }
 
   @override
@@ -251,19 +458,17 @@ class _CommunityPageState extends State<CommunityPage>
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = themeProvider.isDarkMode;
 
-    // First filter by category
     var filteredPosts = _selectedFilter == 'All'
         ? _posts
         : _posts.where((post) => post.category == _selectedFilter).toList();
 
-    // Then filter by search
     if (_searchQuery.isNotEmpty) {
       filteredPosts = filteredPosts.where((post) {
         return post.content
                 .toLowerCase()
                 .contains(_searchQuery.toLowerCase()) ||
             post.username.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            post.tags.any((tag) =>
+            post.tagList.any((tag) =>
                 tag.toLowerCase().contains(_searchQuery.toLowerCase()));
       }).toList();
     }
@@ -272,7 +477,6 @@ class _CommunityPageState extends State<CommunityPage>
       body: SafeArea(
         child: Column(
           children: [
-            // New persistent search bar design
             Container(
               padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
               child: Row(
@@ -291,32 +495,45 @@ class _CommunityPageState extends State<CommunityPage>
                           ),
                         ],
                       ),
-                      child: TextField(
-                        controller: _searchController,
-                        focusNode: _searchFocusNode,
-                        decoration: InputDecoration(
-                          hintText: 'Search posts, users, tags...',
-                          hintStyle: TextStyle(
-                            color: theme.hintColor,
-                            fontSize: 15,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              focusNode: _searchFocusNode,
+                              decoration: InputDecoration(
+                                hintText: 'Search posts, users, tags...',
+                                hintStyle: TextStyle(
+                                  color: theme.hintColor,
+                                  fontSize: 15,
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.search,
+                                  color: theme.colorScheme.primary,
+                                ),
+                                suffixIcon: _searchQuery.isNotEmpty
+                                    ? IconButton(
+                                        icon: Icon(Icons.clear, size: 20),
+                                        onPressed: _clearSearch,
+                                        color: theme.hintColor,
+                                      )
+                                    : null,
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 16,
+                                ),
+                              ),
+                            ),
                           ),
-                          prefixIcon: Icon(
-                            Icons.search,
+                          SizedBox(width: 8),
+                          IconButton(
+                            icon: Icon(Icons.add_circle_outline),
+                            onPressed: _showCreatePostDialog,
+                            tooltip: 'Create Post',
                             color: theme.colorScheme.primary,
                           ),
-                          suffixIcon: _searchQuery.isNotEmpty
-                              ? IconButton(
-                                  icon: Icon(Icons.clear, size: 20),
-                                  onPressed: _clearSearch,
-                                  color: theme.hintColor,
-                                )
-                              : null,
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: 12,
-                            horizontal: 16,
-                          ),
-                        ),
+                        ],
                       ),
                     ),
                   ),
@@ -324,7 +541,6 @@ class _CommunityPageState extends State<CommunityPage>
               ),
             ),
 
-            // Category filters
             Container(
               height: 50,
               padding: EdgeInsets.only(left: 16.0, right: 16.0),
@@ -340,48 +556,80 @@ class _CommunityPageState extends State<CommunityPage>
               ),
             ),
 
-            // Posts list
             Expanded(
-              child: filteredPosts.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.sentiment_dissatisfied,
-                            size: 64,
-                            color: theme.colorScheme.onSurface.withOpacity(0.3),
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            _searchQuery.isNotEmpty
-                                ? 'No results found for "$_searchQuery"'
-                                : 'No posts found in this category',
-                            style: TextStyle(
-                              color:
-                                  theme.colorScheme.onSurface.withOpacity(0.6),
+              child: _isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : _error != null
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.error_outline, color: Colors.red, size: 48),
+                                SizedBox(height: 16),
+                                Text(
+                                  _error!,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                                SizedBox(height: 16),
+                                ElevatedButton.icon(
+                                  onPressed: _loadPosts,
+                                  icon: Icon(Icons.refresh),
+                                  label: Text('Retry'),
+                                )
+                              ],
                             ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: EdgeInsets.all(16),
-                      itemCount: filteredPosts.length,
-                      itemBuilder: (context, index) {
-                        final post = filteredPosts[index];
-                        return _buildPostCard(post, theme);
-                      },
-                    ),
+                          ))
+                      : filteredPosts.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.sentiment_dissatisfied,
+                                    size: 64,
+                                    color: theme.colorScheme.onSurface.withOpacity(0.3),
+                                  ),
+                                  SizedBox(height: 16),
+                                  Text(
+                                    _searchQuery.isNotEmpty
+                                        ? 'No results found for "$_searchQuery"'
+                                        : 'No posts found in this category',
+                                    style: TextStyle(
+                                      color:
+                                          theme.colorScheme.onSurface.withOpacity(0.6),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : RefreshIndicator(
+                              onRefresh: _loadPosts,
+                              child: AnimationLimiter(
+                                child: ListView.builder(
+                                  padding: EdgeInsets.all(16),
+                                  itemCount: filteredPosts.length,
+                                  itemBuilder: (context, index) {
+                                    final post = filteredPosts[index];
+                                    return AnimationConfiguration.staggeredList(
+                                      position: index,
+                                      duration: const Duration(milliseconds: 375),
+                                      child: SlideAnimation(
+                                        verticalOffset: 50.0,
+                                        child: FadeInAnimation(
+                                          child: _buildPostCard(post, theme),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showCreatePostDialog,
-        backgroundColor: theme.colorScheme.primary,
-        child: Icon(Icons.add, color: theme.colorScheme.onPrimary),
-        tooltip: 'Create Post',
       ),
     );
   }
@@ -413,7 +661,6 @@ class _CommunityPageState extends State<CommunityPage>
   }
 
   Widget _buildPostCard(CommunityPost post, ThemeData theme) {
-    // Choose icon and color based on category
     IconData categoryIcon;
     Color categoryColor;
 
@@ -439,9 +686,23 @@ class _CommunityPageState extends State<CommunityPage>
         categoryColor = Colors.grey;
     }
 
-    // Check if this post is liked
     final isLiked = _likedPosts.contains(post.id);
-    final likeCount = isLiked ? post.likes + 1 : post.likes;
+    int baseLikes = 0;
+    final likeCount = isLiked ? baseLikes + 1 : baseLikes;
+
+    Uint8List? imageBytes;
+    if (post.image != null && post.image!.isNotEmpty) {
+      try {
+        String base64String = post.image!;
+        if (base64String.startsWith('data:image')) {
+            base64String = base64String.split(',').last;
+        }
+        base64String = base64.normalize(base64String);
+        imageBytes = base64Decode(base64String);
+      } catch (e) {
+        print("Error decoding base64 image for post ${post.id}: $e");
+      }
+    }
 
     return Card(
       margin: EdgeInsets.only(bottom: 16),
@@ -452,14 +713,14 @@ class _CommunityPageState extends State<CommunityPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // User info and post time
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
                 CircleAvatar(
                   radius: 22,
-                  backgroundImage: AssetImage(post.userImage),
+                  backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                  child: Icon(Icons.person, color: theme.colorScheme.primary),
                 ),
                 SizedBox(width: 12),
                 Expanded(
@@ -467,20 +728,13 @@ class _CommunityPageState extends State<CommunityPage>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        post.username,
+                        post.username.toUpperCase(),
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        _getTimeAgo(post.timestamp),
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
-                          fontSize: 12,
-                        ),
                       ),
                     ],
                   ),
@@ -511,7 +765,6 @@ class _CommunityPageState extends State<CommunityPage>
             ),
           ),
 
-          // Post content
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
@@ -525,8 +778,7 @@ class _CommunityPageState extends State<CommunityPage>
             ),
           ),
 
-          // Post image
-          if (post.image != null)
+          if (imageBytes != null)
             ClipRRect(
               borderRadius: BorderRadius.zero,
               child: Container(
@@ -535,14 +787,20 @@ class _CommunityPageState extends State<CommunityPage>
                   maxHeight: 300,
                 ),
                 width: double.infinity,
-                child: Image.asset(
-                  post.image!,
+                child: Image.memory(
+                  imageBytes,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                     return Container(
+                       height: 150,
+                       color: Colors.grey[300],
+                       child: Center(child: Icon(Icons.broken_image, color: Colors.grey[600]))
+                     );
+                  },
                 ),
               ),
             ),
 
-          // Impact info
           if (post.impact > 0)
             Container(
               margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -589,14 +847,13 @@ class _CommunityPageState extends State<CommunityPage>
               ),
             ),
 
-          // Tags
-          if (post.tags.isNotEmpty)
+          if (post.tagList.isNotEmpty)
             SizedBox(
               height: 40,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                children: post.tags.map((tag) {
+                children: post.tagList.map((tag) {
                   return Container(
                     margin: EdgeInsets.only(right: 6),
                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -619,12 +876,10 @@ class _CommunityPageState extends State<CommunityPage>
               ),
             ),
 
-          // Actions row
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: Row(
               children: [
-                // Like button
                 InkWell(
                   borderRadius: BorderRadius.circular(20),
                   onTap: () => _toggleLike(post.id),
@@ -646,32 +901,6 @@ class _CommunityPageState extends State<CommunityPage>
                             color: isLiked
                                 ? theme.colorScheme.primary
                                 : theme.colorScheme.onSurface.withOpacity(0.7),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Spacer(),
-                // Share button
-                InkWell(
-                  borderRadius: BorderRadius.circular(20),
-                  onTap: () => _sharePost(post),
-                  child: Padding(
-                    padding: const EdgeInsets.all(6.0),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.share_outlined,
-                          size: 20,
-                          color: theme.colorScheme.onSurface.withOpacity(0.7),
-                        ),
-                        SizedBox(width: 6),
-                        Text(
-                          "Share",
-                          style: TextStyle(
-                            color: theme.colorScheme.onSurface.withOpacity(0.7),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -707,8 +936,7 @@ class _CommunityPageState extends State<CommunityPage>
     }
   }
 
-  // Add these methods for the like and share functionality
-  void _toggleLike(String postId) {
+  void _toggleLike(int postId) {
     setState(() {
       if (_likedPosts.contains(postId)) {
         _likedPosts.remove(postId);
@@ -718,20 +946,137 @@ class _CommunityPageState extends State<CommunityPage>
     });
   }
 
-  void _sharePost(CommunityPost post) {
-    final message =
-        "Check out this post from ${post.username}: ${post.content}";
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Sharing: $message'),
-        behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: 'CLOSE',
-          onPressed: () {},
-        ),
+  Future<void> _loadPosts() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final response = await http.get(
+        Uri.parse('https://ngo-app-15sa.onrender.com/api/community/fetch'),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        setState(() {
+          _posts = data.map((json) => CommunityPost.fromJson(json)).toList()
+            ..sort((a, b) => b.id.compareTo(a.id));
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _error = 'Failed to load posts: ${response.statusCode}';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching posts: $e');
+      setState(() {
+        _error = 'Failed to load posts. Check connection.';
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Helper for consistent input border style
+  OutlineInputBorder _inputBorder(ThemeData theme) {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(
+        color: theme.colorScheme.onSurface.withOpacity(0.2),
       ),
     );
-    // In a real app, you would use a package like share_plus here
-    // to implement actual sharing functionality
+  }
+
+  // Function to handle post submission
+  Future<void> _submitPost() async {
+    final String title = _titleController.text.trim();
+    final String username = _usernameController.text.trim();
+    final String content = _contentController.text.trim();
+    final String tags = _tagsController.text.trim();
+    final String peopleNo = _peopleNoController.text.trim();
+    final String? category = _selectedCategory;
+    final String image = _pickedImageBase64 ?? "";
+
+    // Basic validation
+    if (title.isEmpty) {
+      _showValidationError('Please enter a title for your post.');
+      return;
+    }
+    if (username.isEmpty) {
+      _showValidationError('Please enter your name.');
+      return;
+    }
+    if (content.isEmpty) {
+      _showValidationError('Please enter content for your post.');
+      return;
+    }
+    if (category == null) {
+      _showValidationError('Please select a category.');
+      return;
+    }
+
+    setState(() {
+      _isUploading = true;
+    });
+
+    final Map<String, String> postData = {
+      "title": title,
+      "username": username,
+      "content": content,
+      "image": image,
+      "peopleNo": peopleNo.isEmpty ? "0" : peopleNo,
+      "tags": tags,
+      "category": category,
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://ngo-app-15sa.onrender.com/api/community/upload'),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        body: json.encode(postData),
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final dynamic responseData = json.decode(response.body);
+
+        if (responseData is Map<String, dynamic>) {
+            final newPost = CommunityPost.fromJson(responseData);
+            setState(() {
+              _posts.insert(0, newPost);
+            });
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text('Post shared successfully!'),
+                  behavior: SnackBarBehavior.floating),
+            );
+        } else {
+           throw Exception('Invalid response format from server.');
+        }
+      } else {
+        print('Server error: ${response.statusCode} - ${response.body}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to share post. Server error: ${response.statusCode}')),
+        );
+      }
+    } catch (e) {
+      print('Error submitting post: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to share post. Check connection or input.')),
+      );
+    } finally {
+      setState(() {
+        _isUploading = false;
+      });
+    }
+  }
+
+  // Helper to show validation errors
+  void _showValidationError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
   }
 }
