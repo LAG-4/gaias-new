@@ -8,6 +8,9 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:lottie/lottie.dart';
+import 'package:gaia/create_post_page.dart';
 
 class CommunityPost {
   final int id;
@@ -120,336 +123,22 @@ class _CommunityPageState extends State<CommunityPage>
   }
 
   void _showCreatePostDialog() {
-    final theme = Theme.of(context);
-    // Clear controllers and reset state when opening dialog
-    _titleController.clear();
-    _usernameController.clear();
-    _contentController.clear();
-    _tagsController.clear();
-    _peopleNoController.text = '0';
-    setState(() {
-      _selectedCategory = null;
-      _pickedImageBase64 = null;
-    });
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        // Use StatefulBuilder to update dialog state internally
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setDialogState) {
-            return Container(
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: theme.cardColor,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: Padding(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Container(
-                          height: 5,
-                          width: 40,
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.onSurface.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 20),
-                      Text(
-                        'Share Your Contribution',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 20),
-                      TextField(
-                        controller: _titleController,
-                        decoration: InputDecoration(
-                          hintText: 'Post Title',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: theme.colorScheme.onSurface.withOpacity(0.2),
-                            ),
-                          ),
-                          filled: true,
-                          fillColor: theme.colorScheme.surface,
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      TextField(
-                        controller: _usernameController,
-                        decoration: InputDecoration(
-                          hintText: 'Your Name',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: theme.colorScheme.onSurface.withOpacity(0.2),
-                            ),
-                          ),
-                          filled: true,
-                          fillColor: theme.colorScheme.surface,
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      TextField(
-                        controller: _contentController,
-                        maxLines: 4,
-                        decoration: InputDecoration(
-                          hintText: 'What positive impact did you make today?',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: theme.colorScheme.onSurface.withOpacity(0.2),
-                            ),
-                          ),
-                          filled: true,
-                          fillColor: theme.colorScheme.surface,
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _tagsController,
-                              decoration: InputDecoration(
-                                hintText: 'Tags (comma-separated)',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: theme.colorScheme.onSurface.withOpacity(0.2),
-                                  ),
-                                ),
-                                filled: true,
-                                fillColor: theme.colorScheme.surface,
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: DropdownButtonFormField<String>(
-                              value: _selectedCategory,
-                              hint: Text('Category'),
-                              items: ['Volunteer', 'Donation', 'Environment', 'News']
-                                  .map((category) => DropdownMenuItem(
-                                        value: category,
-                                        child: Text(category),
-                                      ))
-                                  .toList(),
-                              onChanged: (value) {
-                                // Use setDialogState for internal dialog updates
-                                setDialogState(() {
-                                  _selectedCategory = value;
-                                });
-                              },
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: theme.colorScheme.onSurface.withOpacity(0.2),
-                                  ),
-                                ),
-                                filled: true,
-                                fillColor: theme.colorScheme.surface,
-                                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                              ),
-                              validator: (value) => value == null ? 'Select category' : null,
-                              autovalidateMode: AutovalidateMode.onUserInteraction,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 16),
-                      Row(
-                        children: [
-                          OutlinedButton.icon(
-                            onPressed: () {
-                              _showImageSourceDialog(context, setDialogState);
-                            },
-                            icon: Icon(
-                              _pickedImageBase64 == null
-                                  ? Icons.photo_library_outlined
-                                  : Icons.check_circle_outline,
-                              color: _pickedImageBase64 == null
-                                  ? null
-                                  : Colors.green,
-                            ),
-                            label: Text('Add Photo'),
-                            style: OutlinedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text('Impact: ', style: TextStyle(fontSize: 16)),
-                          IconButton(
-                            icon: Icon(Icons.remove_circle_outline),
-                            onPressed: () {
-                              int currentValue = int.tryParse(_peopleNoController.text) ?? 0;
-                              if (currentValue > 0) {
-                                _peopleNoController.text = (currentValue - 1).toString();
-                              }
-                            },
-                          ),
-                          SizedBox(
-                            width: 40,
-                            child: TextField(
-                              controller: _peopleNoController,
-                              keyboardType: TextInputType.number,
-                              textAlign: TextAlign.center,
-                              decoration: InputDecoration(
-                                border: _inputBorder(theme),
-                                filled: true,
-                                fillColor: theme.colorScheme.surface,
-                                contentPadding: EdgeInsets.symmetric(vertical: 8)
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.add_circle_outline),
-                            onPressed: () {
-                              int currentValue = int.tryParse(_peopleNoController.text) ?? 0;
-                              // Use setDialogState for internal dialog updates
-                              setDialogState(() {
-                                _peopleNoController.text = (currentValue + 1).toString();
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: _isUploading ? null : () => _submitPost(),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: theme.colorScheme.primary,
-                          foregroundColor: theme.colorScheme.onPrimary,
-                          minimumSize: Size(double.infinity, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: _isUploading
-                            ? SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(
-                                  color: theme.colorScheme.onPrimary,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Text(
-                                'Share with Community',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                      ),
-                      SizedBox(height: 16),
-                      // Add Image Preview
-                      if (_pickedImageBase64 != null)
-                         Padding(
-                           padding: const EdgeInsets.only(top: 16.0),
-                           child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Image Preview:", style: TextStyle(fontWeight: FontWeight.bold)),
-                                SizedBox(height: 8),
-                                Center(
-                                  child: Image.memory(
-                                    base64Decode(_pickedImageBase64!),
-                                    height: 100,
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Text("Preview Error", style: TextStyle(color: Colors.red));
-                                    },
-                                  ),
-                                ),
-                              ],
-                           ),
-                         ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }
-        );
-      },
-    );
-  }
-
-  // Show dialog to choose Camera or Gallery
-  void _showImageSourceDialog(BuildContext context, StateSetter setDialogState) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text("Select Image Source"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(Icons.photo_library),
-              title: Text('Gallery'),
-              onTap: () {
-                Navigator.of(dialogContext).pop(); // Close the dialog
-                _pickImage(ImageSource.gallery, setDialogState);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.camera_alt),
-              title: Text('Camera'),
-              onTap: () {
-                 Navigator.of(dialogContext).pop(); // Close the dialog
-                _pickImage(ImageSource.camera, setDialogState);
-              },
-            ),
-          ],
+    // Navigate to the CreatePostPage
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => CreatePostPage(
+          onPostCreated: (Map<String, dynamic> postData) {
+            // Create a CommunityPost from the API response
+            final newPost = CommunityPost.fromJson(postData);
+            
+            // Add the new post to the top of the list
+            setState(() {
+              _posts.insert(0, newPost);
+            });
+          },
         ),
       ),
     );
-  }
-
-  // Function to pick image and convert to base64
-  Future<void> _pickImage(ImageSource source, StateSetter setDialogState) async {
-    try {
-      final ImagePicker picker = ImagePicker();
-      final XFile? pickedFile = await picker.pickImage(source: source);
-
-      if (pickedFile != null) {
-        final Uint8List imageBytes = await pickedFile.readAsBytes();
-        final String base64String = base64Encode(imageBytes);
-
-        // Use setDialogState to update the dialog UI
-        setDialogState(() {
-          _pickedImageBase64 = base64String;
-        });
-      } else {
-        // User canceled the picker
-        print('No image selected.');
-      }
-    } catch (e) {
-      print("Error picking image: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error picking image: $e'), backgroundColor: Colors.red),
-      );
-    }
   }
 
   @override
@@ -498,32 +187,32 @@ class _CommunityPageState extends State<CommunityPage>
                       child: Row(
                         children: [
                           Expanded(
-                            child: TextField(
-                              controller: _searchController,
-                              focusNode: _searchFocusNode,
-                              decoration: InputDecoration(
-                                hintText: 'Search posts, users, tags...',
-                                hintStyle: TextStyle(
+                      child: TextField(
+                        controller: _searchController,
+                        focusNode: _searchFocusNode,
+                        decoration: InputDecoration(
+                          hintText: 'Search posts, users, tags...',
+                          hintStyle: TextStyle(
+                            color: theme.hintColor,
+                            fontSize: 15,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: theme.colorScheme.primary,
+                          ),
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon: Icon(Icons.clear, size: 20),
+                                  onPressed: _clearSearch,
                                   color: theme.hintColor,
-                                  fontSize: 15,
-                                ),
-                                prefixIcon: Icon(
-                                  Icons.search,
-                                  color: theme.colorScheme.primary,
-                                ),
-                                suffixIcon: _searchQuery.isNotEmpty
-                                    ? IconButton(
-                                        icon: Icon(Icons.clear, size: 20),
-                                        onPressed: _clearSearch,
-                                        color: theme.hintColor,
-                                      )
-                                    : null,
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(
-                                  vertical: 12,
-                                  horizontal: 16,
-                                ),
-                              ),
+                                )
+                              : null,
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 16,
+                          ),
+                        ),
                             ),
                           ),
                           SizedBox(width: 8),
@@ -583,36 +272,36 @@ class _CommunityPageState extends State<CommunityPage>
                             ),
                           ))
                       : filteredPosts.isEmpty
-                          ? Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.sentiment_dissatisfied,
-                                    size: 64,
-                                    color: theme.colorScheme.onSurface.withOpacity(0.3),
-                                  ),
-                                  SizedBox(height: 16),
-                                  Text(
-                                    _searchQuery.isNotEmpty
-                                        ? 'No results found for "$_searchQuery"'
-                                        : 'No posts found in this category',
-                                    style: TextStyle(
-                                      color:
-                                          theme.colorScheme.onSurface.withOpacity(0.6),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.sentiment_dissatisfied,
+                            size: 64,
+                            color: theme.colorScheme.onSurface.withOpacity(0.3),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            _searchQuery.isNotEmpty
+                                ? 'No results found for "$_searchQuery"'
+                                : 'No posts found in this category',
+                            style: TextStyle(
+                              color:
+                                  theme.colorScheme.onSurface.withOpacity(0.6),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
                           : RefreshIndicator(
                               onRefresh: _loadPosts,
                               child: AnimationLimiter(
                                 child: ListView.builder(
-                                  padding: EdgeInsets.all(16),
-                                  itemCount: filteredPosts.length,
-                                  itemBuilder: (context, index) {
-                                    final post = filteredPosts[index];
+                      padding: EdgeInsets.all(16),
+                      itemCount: filteredPosts.length,
+                      itemBuilder: (context, index) {
+                        final post = filteredPosts[index];
                                     return AnimationConfiguration.staggeredList(
                                       position: index,
                                       duration: const Duration(milliseconds: 375),
@@ -623,9 +312,9 @@ class _CommunityPageState extends State<CommunityPage>
                                         ),
                                       ),
                                     );
-                                  },
-                                ),
-                              ),
+                      },
+                    ),
+            ),
                             ),
             ),
           ],
@@ -986,97 +675,6 @@ class _CommunityPageState extends State<CommunityPage>
       borderSide: BorderSide(
         color: theme.colorScheme.onSurface.withOpacity(0.2),
       ),
-    );
-  }
-
-  // Function to handle post submission
-  Future<void> _submitPost() async {
-    final String title = _titleController.text.trim();
-    final String username = _usernameController.text.trim();
-    final String content = _contentController.text.trim();
-    final String tags = _tagsController.text.trim();
-    final String peopleNo = _peopleNoController.text.trim();
-    final String? category = _selectedCategory;
-    final String image = _pickedImageBase64 ?? "";
-
-    // Basic validation
-    if (title.isEmpty) {
-      _showValidationError('Please enter a title for your post.');
-      return;
-    }
-    if (username.isEmpty) {
-      _showValidationError('Please enter your name.');
-      return;
-    }
-    if (content.isEmpty) {
-      _showValidationError('Please enter content for your post.');
-      return;
-    }
-    if (category == null) {
-      _showValidationError('Please select a category.');
-      return;
-    }
-
-    setState(() {
-      _isUploading = true;
-    });
-
-    final Map<String, String> postData = {
-      "title": title,
-      "username": username,
-      "content": content,
-      "image": image,
-      "peopleNo": peopleNo.isEmpty ? "0" : peopleNo,
-      "tags": tags,
-      "category": category,
-    };
-
-    try {
-      final response = await http.post(
-        Uri.parse('https://ngo-app-15sa.onrender.com/api/community/upload'),
-        headers: {'Content-Type': 'application/json; charset=UTF-8'},
-        body: json.encode(postData),
-      );
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        final dynamic responseData = json.decode(response.body);
-
-        if (responseData is Map<String, dynamic>) {
-            final newPost = CommunityPost.fromJson(responseData);
-            setState(() {
-              _posts.insert(0, newPost);
-            });
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                  content: Text('Post shared successfully!'),
-                  behavior: SnackBarBehavior.floating),
-            );
-        } else {
-           throw Exception('Invalid response format from server.');
-        }
-      } else {
-        print('Server error: ${response.statusCode} - ${response.body}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to share post. Server error: ${response.statusCode}')),
-        );
-      }
-    } catch (e) {
-      print('Error submitting post: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to share post. Check connection or input.')),
-      );
-    } finally {
-      setState(() {
-        _isUploading = false;
-      });
-    }
-  }
-
-  // Helper to show validation errors
-  void _showValidationError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 }
