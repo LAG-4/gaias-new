@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:provider/provider.dart';
 import 'package:gaia/theme_provider.dart';
 
@@ -87,7 +88,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
     final String tags = _tagsController.text.trim();
     final String peopleNo = _peopleNoController.text.trim();
     final String? category = _selectedCategory;
-    final String image = _pickedImageBase64 ?? "";
+    final String? imageBase64 = _pickedImageBase64;
 
     // Basic validation
     if (title.isEmpty) {
@@ -111,22 +112,48 @@ class _CreatePostPageState extends State<CreatePostPage> {
       _isUploading = true;
     });
 
-    final Map<String, String> postData = {
+    // Create the post data JSON object
+    final Map<String, dynamic> postData = {
       "title": title,
       "username": username,
       "content": content,
-      "image": image,
       "peopleNo": peopleNo.isEmpty ? "0" : peopleNo,
       "tags": tags,
       "category": category,
     };
 
     try {
-      final response = await http.post(
-        Uri.parse('https://ngo-app-15sa.onrender.com/api/community/upload'),
-        headers: {'Content-Type': 'application/json; charset=UTF-8'},
-        body: json.encode(postData),
+      // Create a multipart request
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('https://ngo-community.onrender.com/api/community/upload'),
       );
+      
+      // Add the post data as a form field
+      request.fields['post'] = json.encode(postData);
+      
+      // Add the image file if available
+      if (imageBase64 != null && imageBase64.isNotEmpty) {
+        // Convert base64 to bytes
+        final bytes = base64Decode(imageBase64);
+        
+        // Create a multipart file
+        final imageFile = http.MultipartFile.fromBytes(
+          'imageFile',
+          bytes,
+          filename: 'image.jpg',
+          contentType: MediaType('image', 'jpeg'),
+        );
+        
+        // Add the file to the request
+        request.files.add(imageFile);
+      }
+      
+      // Send the request
+      final streamedResponse = await request.send();
+      
+      // Get the response
+      final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         final dynamic responseData = json.decode(response.body);

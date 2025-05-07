@@ -2,6 +2,77 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gaia/theme_provider.dart';
 import 'package:gaia/myrewards.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:math';
+import 'package:shared_preferences/shared_preferences.dart';
+
+// User profile model to parse API response
+class UserProfile {
+  final String? firstName;
+  final String? lastName;
+  final String email;
+  final int totalPoints;
+  final List<DonationItem> donations;
+  final bool isAdmin;
+
+  UserProfile({
+    this.firstName,
+    this.lastName,
+    required this.email,
+    required this.totalPoints,
+    required this.donations,
+    required this.isAdmin,
+  });
+
+  factory UserProfile.fromJson(Map<String, dynamic> json) {
+    List<DonationItem> donationsList = [];
+    if (json['donations'] != null) {
+      donationsList = List<DonationItem>.from(
+        json['donations'].map((donation) => DonationItem.fromJson(donation)),
+      );
+    }
+
+    return UserProfile(
+      firstName: json['firstName'],
+      lastName: json['lastName'],
+      email: json['email'] ?? 'Unknown',
+      totalPoints: json['totalPoints'] ?? 0,
+      donations: donationsList,
+      isAdmin: json['isAdmin'] ?? false,
+    );
+  }
+}
+
+// Donation item model for user profile
+class DonationItem {
+  final int id;
+  final int userId;
+  final double donationAmount;
+  final String donationDate;
+  final int pointsEarned;
+  final String? ngoName;
+
+  DonationItem({
+    required this.id,
+    required this.userId,
+    required this.donationAmount,
+    required this.donationDate,
+    required this.pointsEarned,
+    this.ngoName,
+  });
+
+  factory DonationItem.fromJson(Map<String, dynamic> json) {
+    return DonationItem(
+      id: json['id'],
+      userId: json['userId'],
+      donationAmount: json['donationAmount'] ?? 0.0,
+      donationDate: json['donationDate'] ?? '',
+      pointsEarned: json['pointsEarned'] ?? 0,
+      ngoName: json['ngoName'],
+    );
+  }
+}
 
 class Contribution {
   final String ngoName;
@@ -67,6 +138,43 @@ class Contribution {
       icon: iconData,
     );
   }
+
+  // Create from API response
+  factory Contribution.fromApi(Map<String, dynamic> apiData) {
+    // Format the date from API (assuming ISO format)
+    String formattedDate = '';
+    if (apiData['donationDate'] != null) {
+      try {
+        DateTime dateTime = DateTime.parse(apiData['donationDate']);
+        formattedDate = '${dateTime.day} ${_getMonthName(dateTime.month)} ${dateTime.year}';
+      } catch (e) {
+        formattedDate = 'Unknown date';
+        print('Error parsing date: $e');
+      }
+    }
+
+    // Determine NGO name
+    String ngoName = apiData['ngoName'] ?? 'Unknown Organization';
+    
+    return Contribution(
+      ngoName: ngoName,
+      location: 'India', // Default location since API doesn't provide it
+      description: 'Donation of ₹${apiData['donationAmount']}',
+      date: formattedDate,
+      points: apiData['pointsEarned'] ?? 0,
+      category: 'Donation', // Assuming all API entries are donations
+      icon: Icons.attach_money,
+    );
+  }
+
+  // Helper method to convert month number to name
+  static String _getMonthName(int month) {
+    const monthNames = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return monthNames[month - 1];
+  }
 }
 
 class MyContributions extends StatefulWidget {
@@ -79,13 +187,227 @@ class MyContributions extends StatefulWidget {
 }
 
 class _MyContributionsState extends State<MyContributions> {
+  List<Contribution> _contributions = [];
+  final List<String> _filters = ["All", "Donation", "Volunteer"];
   String _currentFilter = "All";
-  late List<Contribution> _contributions;
-  final List<String> _filters = ["All", "Volunteer", "Donation"];
+  bool _isLoading = true;
+  String? _errorMessage;
+  UserProfile? _userProfile;
 
-  // Initialize sample contribution data
-  void _initializeContributions() {
-    _contributions = [
+  @override
+  void initState() {
+    super.initState();
+    _fetchContributions();
+    _fetchUserProfile();
+  }
+
+  // Fetch user profile from API
+  Future<void> _fetchUserProfile() async {
+    try {
+      // Get the auth token from shared preferences
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      if (token == null || token.isEmpty) {
+        print('Authentication token not found for profile fetch');
+        return;
+      }
+
+      print('Fetching user profile with token: ${token.substring(0, min(20, token.length))}...');
+
+      // Make API request with the token
+      final response = await http.get(
+        Uri.parse('https://ngo-app-3mvh.onrender.com/api/user/profile'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      );
+
+      print('Profile API Response Status: ${response.statusCode}');
+      print('Profile API Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        // Success - parse the data
+        final Map<String, dynamic> data = json.decode(response.body);
+        
+        // Parse user profile
+        setState(() {
+          _userProfile = UserProfile.fromJson(data);
+        });
+        
+        print('User profile fetched successfully. Total points: ${_userProfile?.totalPoints}');
+      } else {
+        print('Failed to fetch user profile. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Exception during profile fetch: $e');
+    }
+  }
+
+  // Fetch contributions from API
+  Future<void> _fetchContributions() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // Get the auth token from shared preferences
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      if (token == null || token.isEmpty) {
+        setState(() {
+          _errorMessage = 'Authentication token not found. Please login again.';
+          _isLoading = false;
+          // Fall back to sample data
+          _contributions = _getSampleContributions();
+        });
+        return;
+      }
+
+      print('Using token: ${token.substring(0, min(20, token.length))}...');
+
+      // Make API request with the token
+      final response = await http.get(
+        Uri.parse('https://ngo-app-3mvh.onrender.com/api/user/profile/donations'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      );
+
+      print('API Response Status: ${response.statusCode}');
+      print('API Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        // Success - parse the data
+        final List<dynamic> data = json.decode(response.body);
+        
+        print('Parsed data: $data');
+        
+        // Convert API data to Contribution objects
+        List<Contribution> apiContributions = data
+            .map((item) => Contribution.fromApi(item))
+            .toList();
+        
+        // Initialize with sample data if needed (for testing)
+        List<Contribution> sampleContributions = _getSampleContributions();
+        
+        setState(() {
+          // For now, let's use both API data and sample data
+          _contributions = [...apiContributions, ...sampleContributions];
+          
+          // Add new contribution if provided
+          if (widget.newContribution != null) {
+            _contributions.insert(0, Contribution.fromMap(widget.newContribution!));
+          }
+          
+          _isLoading = false;
+        });
+      } else if (response.statusCode == 400) {
+        // Handle "no donations yet" response
+        try {
+          final errorData = json.decode(response.body);
+          if (errorData['errorMsg'] != null && 
+              errorData['errorMsg'].toString().contains("not done any donations yet")) {
+            print('User has no donations yet');
+            
+            setState(() {
+              // Just use sample data and any new contribution
+              _contributions = _getSampleContributions();
+              
+              // Add new contribution if provided
+              if (widget.newContribution != null) {
+                _contributions.insert(0, Contribution.fromMap(widget.newContribution!));
+              }
+              
+              _isLoading = false;
+            });
+            return;
+          }
+        } catch (e) {
+          // If parsing fails, handle as generic error
+          print('Error parsing 400 response: $e');
+        }
+        
+        // Handle as generic error if not a "no donations" message
+        setState(() {
+          _errorMessage = 'Failed to load contributions. Please try again later.';
+          _isLoading = false;
+          _contributions = _getSampleContributions();
+          
+          // Add new contribution if provided
+          if (widget.newContribution != null) {
+            _contributions.insert(0, Contribution.fromMap(widget.newContribution!));
+          }
+        });
+      } else if (response.statusCode == 401) {
+        // Handle unauthorized error specifically
+        print('Unauthorized access. Token may be invalid or expired.');
+        
+        // Try to parse error message from response
+        String errorMsg = 'Authentication failed. Please login again.';
+        try {
+          final errorData = json.decode(response.body);
+          if (errorData['error'] != null) {
+            errorMsg = errorData['error'];
+          }
+        } catch (e) {
+          // If parsing fails, use default message
+        }
+        
+        setState(() {
+          _errorMessage = errorMsg;
+          _isLoading = false;
+          
+          // Fall back to sample data
+          _contributions = _getSampleContributions();
+          
+          // Add new contribution if provided
+          if (widget.newContribution != null) {
+            _contributions.insert(0, Contribution.fromMap(widget.newContribution!));
+          }
+        });
+      } else {
+        // Handle other errors
+        setState(() {
+          _errorMessage = 'Failed to load contributions. Status code: ${response.statusCode}';
+          _isLoading = false;
+          
+          // Fall back to sample data
+          _contributions = _getSampleContributions();
+          
+          // Add new contribution if provided
+          if (widget.newContribution != null) {
+            _contributions.insert(0, Contribution.fromMap(widget.newContribution!));
+          }
+        });
+        print('API Error: ${response.body}');
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error fetching contributions: $e';
+        _isLoading = false;
+        
+        // Fall back to sample data
+        _contributions = _getSampleContributions();
+        
+        // Add new contribution if provided
+        if (widget.newContribution != null) {
+          _contributions.insert(0, Contribution.fromMap(widget.newContribution!));
+        }
+      });
+      print('Exception: $e');
+    }
+  }
+
+  // Get sample contribution data for fallback
+  List<Contribution> _getSampleContributions() {
+    return [
       Contribution(
         ngoName: "Akshaya Patra",
         location: "Delhi, India",
@@ -114,12 +436,6 @@ class _MyContributionsState extends State<MyContributions> {
         icon: Icons.attach_money,
       ),
     ];
-
-    // Add new contribution if provided
-    if (widget.newContribution != null) {
-      // Add the new contribution at the top of the list
-      _contributions.insert(0, Contribution.fromMap(widget.newContribution!));
-    }
   }
 
   List<Contribution> get filteredContributions {
@@ -127,17 +443,6 @@ class _MyContributionsState extends State<MyContributions> {
       return _contributions;
     } else {
       return _contributions.where((c) => c.category == _currentFilter).toList();
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeContributions();
-
-    // Set initial filter based on new contribution if provided
-    if (widget.newContribution != null) {
-      _currentFilter = widget.newContribution!['category'] ?? "All";
     }
   }
 
@@ -170,6 +475,12 @@ class _MyContributionsState extends State<MyContributions> {
 
   // Calculate total points
   int _calculateTotalPoints() {
+    // If user profile is available, use the total points from API
+    if (_userProfile != null) {
+      return _userProfile!.totalPoints;
+    }
+    
+    // Fallback to calculating from local contributions
     return filteredContributions.isEmpty
         ? 0
         : filteredContributions.map((c) => c.points).reduce((a, b) => a + b);
@@ -238,59 +549,67 @@ class _MyContributionsState extends State<MyContributions> {
 
           // Contributions list
           Expanded(
-            child: filteredContributions.isEmpty
+            child: _isLoading
                 ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.volunteer_activism,
-                          size: 64,
-                          color: theme.colorScheme.primary.withOpacity(0.5),
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          "No $_currentFilter contributions yet",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: theme.colorScheme.onSurface.withOpacity(0.7),
-                          ),
-                        ),
-                      ],
-                    ),
+                    child: CircularProgressIndicator(),
                   )
-                : ListView.builder(
-                    padding: EdgeInsets.fromLTRB(16, 8, 16, 16),
-                    itemCount: _groupByMonth().length,
-                    itemBuilder: (context, index) {
-                      final entries = _groupByMonth().entries.toList();
-                      final month = entries[index].key;
-                      final monthContributions = entries[index].value;
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Month header
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 16.0),
-                            child: Text(
-                              month,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: theme.colorScheme.onSurface
-                                    .withOpacity(0.7),
-                              ),
+                : _errorMessage != null
+                    ? Center(
+                        child: Text(_errorMessage!),
+                      )
+                    : filteredContributions.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.volunteer_activism,
+                                  size: 64,
+                                  color: theme.colorScheme.primary.withOpacity(0.5),
+                                ),
+                                SizedBox(height: 16),
+                                Text(
+                                  "No $_currentFilter contributions yet",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
+                          )
+                        : ListView.builder(
+                            padding: EdgeInsets.fromLTRB(16, 8, 16, 16),
+                            itemCount: _groupByMonth().length,
+                            itemBuilder: (context, index) {
+                              final entries = _groupByMonth().entries.toList();
+                              final month = entries[index].key;
+                              final monthContributions = entries[index].value;
 
-                          // Month contributions
-                          ...monthContributions.map((contribution) =>
-                              _buildContributionCard(contribution, theme)),
-                        ],
-                      );
-                    },
-                  ),
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Month header
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                                    child: Text(
+                                      month,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: theme.colorScheme.onSurface
+                                            .withOpacity(0.7),
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Month contributions
+                                  ...monthContributions.map((contribution) =>
+                                      _buildContributionCard(contribution, theme)),
+                                ],
+                              );
+                            },
+                          ),
           ),
         ],
       ),
@@ -307,12 +626,27 @@ class _MyContributionsState extends State<MyContributions> {
           Icons.star_rounded,
           color: theme.colorScheme.onPrimary,
         ),
-        label: Text(
-          "${_calculateTotalPoints()} pts",
-          style: TextStyle(
-            color: theme.colorScheme.onPrimary,
-            fontWeight: FontWeight.bold,
-          ),
+        label: Row(
+          children: [
+            Text(
+              "${_calculateTotalPoints()} pts",
+              style: TextStyle(
+                color: theme.colorScheme.onPrimary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (_userProfile != null && _userProfile!.donations.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  "(${_userProfile!.donations.length} donations)",
+                  style: TextStyle(
+                    color: theme.colorScheme.onPrimary,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

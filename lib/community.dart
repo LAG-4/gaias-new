@@ -14,6 +14,7 @@ import 'package:gaia/create_post_page.dart';
 
 class CommunityPost {
   final int id;
+  final String title;
   final String username;
   final String content;
   final String? image;
@@ -23,6 +24,7 @@ class CommunityPost {
 
   CommunityPost({
     required this.id,
+    required this.title,
     required this.username,
     required this.content,
     this.image,
@@ -36,11 +38,53 @@ class CommunityPost {
     if (json['peopleNo'] != null) {
       parsedImpact = int.tryParse(json['peopleNo'].toString()) ?? 0;
     }
+    
+    // Handle image data which might be in different formats
+    String? imageData;
+    
+    // Handle the imageDate field from the API response
+    if (json['imageDate'] != null) {
+      String imageDate = json['imageDate'].toString();
+      
+      // Check if imageDate is a valid base64 string or just a filename
+      if (imageDate.contains('.jpeg') || imageDate.contains('.jpg') || 
+          imageDate.contains('.png') || imageDate.contains('.gif')) {
+        // This is likely a filename, not base64 data
+        // Use a placeholder image URL instead
+        imageData = 'https://via.placeholder.com/150';
+      } else {
+        // Assume it's base64 data
+        imageData = imageDate;
+      }
+    }
+    // Handle imageName field
+    else if (json['imageName'] != null) {
+      // For the new API format with imageName field
+      String imageName = json['imageName'];
+      if (imageName.startsWith('./cloudFiles/')) {
+        // This is a relative path on the server, we'll use the full image URL
+        imageData = 'https://ngo-community.onrender.com/${imageName}';
+      } else {
+        // For other image formats, we'll keep the original name
+        imageData = imageName;
+      }
+    } 
+    // Fallback to image field
+    else if (json['image'] != null) {
+      // Fallback for old format
+      if (json['image'] is Map && json['image']['data'] != null) {
+        imageData = json['image']['data'];
+      } else if (json['image'] is String) {
+        imageData = json['image'];
+      }
+    }
+    
     return CommunityPost(
       id: json['id'] ?? 0,
+      title: json['title'] ?? 'Untitled',
       username: json['username'] ?? 'Unknown User',
       content: json['content'] ?? '',
-      image: json['image'] as String?,
+      image: imageData,
       category: json['category'] ?? 'General',
       tags: json['tags'] ?? '',
       impact: parsedImpact,
@@ -379,15 +423,36 @@ class _CommunityPageState extends State<CommunityPage>
     int baseLikes = 0;
     final likeCount = isLiked ? baseLikes + 1 : baseLikes;
 
+    // Determine if we have an image to display and what type it is
+    bool hasImage = post.image != null && post.image!.isNotEmpty;
+    bool isImageUrl = hasImage && (post.image!.startsWith('http://') || post.image!.startsWith('https://'));
     Uint8List? imageBytes;
-    if (post.image != null && post.image!.isNotEmpty) {
+    
+    // Try to decode base64 image if it's not a URL
+    if (hasImage && !isImageUrl) {
       try {
         String base64String = post.image!;
-        if (base64String.startsWith('data:image')) {
-            base64String = base64String.split(',').last;
+        
+        // Check if the string looks like a filename rather than base64 data
+        if (base64String.contains('.jpeg') || base64String.contains('.jpg') || 
+            base64String.contains('.png') || base64String.contains('.gif')) {
+          // This is likely a filename, not base64 data
+          print("Skipping invalid base64 data for post ${post.id}: $base64String");
+        } else {
+          // Process valid base64 data
+          if (base64String.startsWith('data:image')) {
+              base64String = base64String.split(',').last;
+          }
+          
+          // Additional validation - check if the string contains valid base64 characters
+          final RegExp base64Regex = RegExp(r'^[A-Za-z0-9+/=]+$');
+          if (base64Regex.hasMatch(base64String)) {
+            base64String = base64.normalize(base64String);
+            imageBytes = base64Decode(base64String);
+          } else {
+            print("Invalid base64 format for post ${post.id}");
+          }
         }
-        base64String = base64.normalize(base64String);
-        imageBytes = base64Decode(base64String);
       } catch (e) {
         print("Error decoding base64 image for post ${post.id}: $e");
       }
@@ -421,6 +486,16 @@ class _CommunityPageState extends State<CommunityPage>
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        post.title,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                          color: theme.colorScheme.onSurface.withOpacity(0.7),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -467,7 +542,7 @@ class _CommunityPageState extends State<CommunityPage>
             ),
           ),
 
-          if (imageBytes != null)
+          if (hasImage)
             ClipRRect(
               borderRadius: BorderRadius.zero,
               child: Container(
@@ -476,17 +551,50 @@ class _CommunityPageState extends State<CommunityPage>
                   maxHeight: 300,
                 ),
                 width: double.infinity,
-                child: Image.memory(
-                  imageBytes,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                     return Container(
-                       height: 150,
-                       color: Colors.grey[300],
-                       child: Center(child: Icon(Icons.broken_image, color: Colors.grey[600]))
-                     );
-                  },
-                ),
+                child: isImageUrl 
+                  ? Image.network(
+                      post.image!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        print("Error loading image URL: $error");
+                        return Container(
+                          height: 150,
+                          color: Colors.grey[300],
+                          child: Center(child: Icon(Icons.broken_image, color: Colors.grey[600]))
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          height: 200,
+                          color: Colors.grey[200],
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                : null,
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  : imageBytes != null
+                    ? Image.memory(
+                        imageBytes,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 150,
+                            color: Colors.grey[300],
+                            child: Center(child: Icon(Icons.broken_image, color: Colors.grey[600]))
+                          );
+                        },
+                      )
+                    : Container(
+                        height: 150,
+                        color: Colors.grey[300],
+                        child: Center(child: Icon(Icons.image_not_supported, color: Colors.grey[600])),
+                      ),
               ),
             ),
 
@@ -643,11 +751,12 @@ class _CommunityPageState extends State<CommunityPage>
 
     try {
       final response = await http.get(
-        Uri.parse('https://ngo-app-15sa.onrender.com/api/community/fetch'),
+        Uri.parse('https://ngo-community.onrender.com/api/community/fetch'),
       );
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
+        
         setState(() {
           _posts = data.map((json) => CommunityPost.fromJson(json)).toList()
             ..sort((a, b) => b.id.compareTo(a.id));
