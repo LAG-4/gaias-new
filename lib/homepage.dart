@@ -320,7 +320,259 @@ class _HomePageState extends State<HomePage>
             'description': 'Pioneering sanitation improvements in India'
           },
         ];
-      // Add cases for remaining goals
+      case 6:
+        return [
+          {
+            'name': 'Selco Foundation',
+            'description': 'Sustainable energy solutions for underserved communities'
+          },
+          {
+            'name': 'TERI',
+            'description': 'Research and initiatives for clean energy transition'
+          },
+          {
+            'name': 'Barefoot College',
+            'description': 'Training rural women as solar engineers'
+          },
+          {
+            'name': 'CLEAN',
+            'description': 'Clean Energy Access Network promoting decentralized solutions'
+          },
+          {
+            'name': 'IREF',
+            'description': 'India Renewable Energy Federation advancing clean energy'
+          },
+        ];
+      case 7:
+        return [
+          {
+            'name': 'SEWA',
+            'description': 'Self Employed Women\'s Association promoting economic empowerment'
+          },
+          {
+            'name': 'Pratham',
+            'description': 'Vocational training and employment opportunities'
+          },
+          {
+            'name': 'NSDC',
+            'description': 'National Skill Development Corporation building workforce capabilities'
+          },
+          {
+            'name': 'TISS',
+            'description': 'Tata Institute of Social Sciences promoting decent work'
+          },
+          {
+            'name': 'Labournet',
+            'description': 'Formalizing informal sector workers and improving conditions'
+          },
+        ];
+      case 8:
+        return [
+          {
+            'name': 'CII Foundation',
+            'description': 'Industry initiatives for sustainable infrastructure development'
+          },
+          {
+            'name': 'NASSCOM Foundation',
+            'description': 'Technology innovation for sustainable development'
+          },
+          {
+            'name': 'Digital Empowerment Foundation',
+            'description': 'Bridging digital divide through infrastructure'
+          },
+          {
+            'name': 'Development Alternatives',
+            'description': 'Sustainable technology and infrastructure solutions'
+          },
+          {
+            'name': 'CIIE',
+            'description': 'Centre for Innovation Incubation and Entrepreneurship'
+          },
+        ];
+      case 9:
+        return [
+          {
+            'name': 'Goonj',
+            'description': 'Material resource distribution to reduce inequalities'
+          },
+          {
+            'name': 'ActionAid India',
+            'description': 'Fighting social and economic inequalities'
+          },
+          {
+            'name': 'Azad Foundation',
+            'description': 'Women\'s empowerment in non-traditional livelihoods'
+          },
+          {
+            'name': 'Oxfam India',
+            'description': 'Fighting inequality through policy advocacy'
+          },
+          {
+            'name': 'Navsarjan Trust',
+            'description': 'Dalit rights and fighting caste-based discrimination'
+          },
+        ];
+      case 10:
+        return [
+          {
+            'name': 'YUVA',
+            'description': 'Youth for Unity and Voluntary Action in urban development'
+          },
+          {
+            'name': 'CURE',
+            'description': 'Centre for Urban and Regional Excellence'
+          },
+          {
+            'name': 'Mahila Housing Trust',
+            'description': 'Improving housing conditions for urban poor women'
+          },
+          {
+            'name': 'SPARC',
+            'description': 'Society for Promotion of Area Resource Centres'
+          },
+          {
+            'name': 'Urban Management Centre',
+            'description': 'Technical assistance for sustainable urban development'
+          },
+        ];
+      case 11:
+        return [
+          {
+            'name': 'Chintan',
+            'description': 'Environmental research and action on waste management'
+          },
+          {
+            'name': 'Toxics Link',
+            'description': 'Environmental justice and sustainable production/consumption'
+          },
+          {
+            'name': 'TERI',
+            'description': 'The Energy and Resources Institute promoting sustainability'
+          },
+          {
+            'name': 'CEE',
+            'description': 'Centre for Environment Education promoting sustainable lifestyles'
+          },
+          {
+            'name': 'SEWA',
+            'description': 'Green livelihoods and sustainable production initiatives'
+          },
+        ];
+      case 12:
+        return [
+          {
+            'name': 'TERI',
+            'description': 'Climate change research and policy advocacy'
+          },
+          {
+            'name': 'CSE',
+            'description': 'Centre for Science and Environment climate initiatives'
+          },
+          {
+            'name': 'CANSA',
+            'description': 'Climate Action Network South Asia'
+          },
+          {
+            'name': 'ICLEI South Asia',
+            'description': 'Local Governments for Sustainability network'
+          },
+          {
+            'name': 'CEEW',
+            'description': 'Council on Energy, Environment and Water'
+          },
+        ];
+      case 13:
+        return [
+          {
+            'name': 'WWF India',
+            'description': 'Conservation of marine ecosystems and species'
+          },
+          {
+            'name': 'Dakshin Foundation',
+            'description': 'Marine conservation and coastal community support'
+          },
+          {
+            'name': 'ReefWatch Marine Conservation',
+            'description': 'Coral reef protection and marine ecosystem restoration'
+          },
+          {
+            'name': 'CMFRI',
+            'description': 'Central Marine Fisheries Research Institute'
+          },
+          {
+            'name': 'Terra Conscious',
+            'description': 'Marine conservation and responsible tourism'
+          },
+        ];
+      case 14:
+        return [
+          {
+            'name': 'WWF India',
+            'description': 'Wildlife and forest conservation programs'
+          },
+          {
+            'name': 'Wildlife Trust of India',
+            'description': 'Conservation and protection of wildlife habitats'
+          },
+          {
+            'name': 'ATREE',
+            'description': 'Ashoka Trust for Research in Ecology and the Environment'
+          },
+          {
+            'name': 'Foundation for Ecological Security',
+            'description': 'Ecological restoration and conservation of land and water resources'
+          },
+          {
+            'name': 'Nature Conservation Foundation',
+            'description': 'Science-based wildlife conservation and research'
+          },
+        ];
+      case 15:
+        return [
+          {
+            'name': 'PRIA',
+            'description': 'Participatory Research in Asia strengthening democratic governance'
+          },
+          {
+            'name': 'CRY',
+            'description': 'Child Rights and You promoting justice for children'
+          },
+          {
+            'name': 'Common Cause',
+            'description': 'Public interest interventions for good governance'
+          },
+          {
+            'name': 'CHRI',
+            'description': 'Commonwealth Human Rights Initiative'
+          },
+          {
+            'name': 'HRLN',
+            'description': 'Human Rights Law Network providing legal support'
+          },
+        ];
+      case 16:
+        return [
+          {
+            'name': 'PRIA',
+            'description': 'Building partnerships for sustainable development'
+          },
+          {
+            'name': 'VANI',
+            'description': 'Voluntary Action Network India coordinating NGO efforts'
+          },
+          {
+            'name': 'Global Partnership Network',
+            'description': 'Facilitating international development cooperation'
+          },
+          {
+            'name': 'UN India',
+            'description': 'United Nations partnerships for SDG implementation'
+          },
+          {
+            'name': 'AID India',
+            'description': 'Association for India\'s Development building global partnerships'
+          },
+        ];
       default:
         return [
           {
